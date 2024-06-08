@@ -4,6 +4,7 @@ import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { SearchIcon } from "@/components/icons";
 
@@ -36,6 +37,7 @@ export default function Search({
       handleSearch();
     }
   }
+  const t = useTranslations();
 
   return (
     <Input
@@ -56,7 +58,7 @@ export default function Search({
         </Button>
       }
       labelPlacement="outside"
-      placeholder="Search..."
+      placeholder={t("Search.placeholder")}
       value={keyword}
       onKeyUp={handleKeyup}
       onValueChange={setKeyword}

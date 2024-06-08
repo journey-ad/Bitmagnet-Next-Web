@@ -33,6 +33,20 @@ const SEARCH = gql`
   }
 `;
 
+const TOTAL = gql`
+  query TorrentContentSearch($query: SearchQueryInput) {
+    torrentContent {
+      search(query: $query) {
+        items {
+          torrent {
+            hash: infoHash
+          }
+        }
+      }
+    }
+  }
+`;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get("keyword");
@@ -52,21 +66,40 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { data } = await client.query({
-      query: SEARCH,
-      variables: {
-        query: {
-          queryString: keyword,
-          limit,
-          hasNextPage: true,
-          cached: false,
-          totalCount: true,
-          offset,
-        },
-      },
-    });
+    const query = {
+      queryString: keyword,
+      hasNextPage: false,
+      cached: true,
+      totalCount: false,
+      offset: 0,
+    };
 
-    const torrents = { ...data.torrentContent.search };
+    const reqArr = [
+      client.query({
+        query: SEARCH,
+        variables: {
+          query: {
+            ...query,
+            limit,
+            offset,
+          },
+        },
+      }),
+      client.query({
+        query: TOTAL,
+        variables: {
+          query: {
+            ...query,
+            limit: 1000, // 默认返回的total_count不准确，先用这种方法代替
+          },
+        },
+      }),
+    ];
+
+    const [respData, respTotal] = await Promise.all(reqArr);
+
+    const torrents = { ...respData.data.torrentContent.search };
+    const total = respTotal.data.torrentContent.search.items.length;
 
     torrents.items = torrents.items.map((item: any) => {
       const result = {
@@ -81,9 +114,18 @@ export async function GET(request: Request) {
       return result;
     });
 
-    return NextResponse.json(torrents, {
-      status: 200,
-    });
+    torrents.total_count = total;
+
+    return NextResponse.json(
+      {
+        data: torrents,
+        message: "success",
+        status: 200,
+      },
+      {
+        status: 200,
+      },
+    );
   } catch (error) {
     console.error(error);
 

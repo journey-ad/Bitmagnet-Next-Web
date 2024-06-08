@@ -12,15 +12,17 @@ import {
 } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
 
-import { SearchResultsItemProps } from "@/types";
+import { TorrentItemProps } from "@/types";
 import { hexToBase64, formatByteSize, formatDate } from "@/utils";
-import { MagnetIcon } from "@/components/icons";
+import FileTypeIcon from "@/components/FileTypeIcon";
+
+const MAX_DISPLAY_FILES = 10;
 
 export default function SearchResultsItem({
   item,
   keyword,
 }: {
-  item: SearchResultsItemProps;
+  item: TorrentItemProps;
   keyword: string;
 }) {
   const data = {
@@ -53,7 +55,7 @@ export default function SearchResultsItem({
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex gap-3 bg-gray-100">
+      <CardHeader className="flex gap-3 bg-gray-100 dark:bg-slate-800">
         <div className="flex flex-col">
           <Link isExternal href={data.url}>
             <h2
@@ -63,11 +65,15 @@ export default function SearchResultsItem({
           </Link>
         </div>
       </CardHeader>
-      <Divider className="bg-gray-200" />
+      <Divider className="bg-gray-200 dark:bg-slate-700" />
       <CardBody>
         <ul>
-          {data.files.slice(0, 15).map((file) => (
+          {data.files.slice(0, MAX_DISPLAY_FILES).map((file) => (
             <li key={file.index} className="flex items-center mb-1">
+              <FileTypeIcon
+                className="mr-1 mb-auto"
+                extension={file.extension}
+              />
               <span
                 dangerouslySetInnerHTML={{
                   __html: highlightedText(file.path),
@@ -75,7 +81,7 @@ export default function SearchResultsItem({
                 className="text-sm"
               />
               <Chip
-                className="h-5 mx-1 px-[2px] text-[10px] font-bold"
+                className="h-5 mx-1 mb-auto px-[2px] text-[10px] font-bold"
                 classNames="font-bold"
                 size="sm"
               >
@@ -83,17 +89,19 @@ export default function SearchResultsItem({
               </Chip>
             </li>
           ))}
-          {data.files.length > 15 && (
+          {data.files.length > MAX_DISPLAY_FILES && (
             <li className="text-sm italic text-gray-500">
-              {t("Search.more_files", { count: data.files.length - 15 })}
+              {t("Search.more_files", {
+                count: data.files.length - MAX_DISPLAY_FILES,
+              })}
             </li>
           )}
         </ul>
       </CardBody>
-      <Divider className="bg-gray-200" />
-      <CardFooter className="bg-gray-100">
+      <Divider className="bg-gray-200 dark:bg-slate-700" />
+      <CardFooter className="bg-gray-100 dark:bg-slate-800">
         <Link className="text-sm" href={data.magnet_uri}>
-          <MagnetIcon className="w-4 h-4 mr-1" />
+          <span className="pointer-events-none select-none">🧲</span>
           {t("Search.magnet")}
         </Link>
         <div className="flex gap-x-2 ml-2 text-sm text-gray-500">
