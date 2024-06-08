@@ -1,0 +1,19 @@
+html ,body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: unset;
+  scroll-behavior: smooth;
+  touch-action: manipulation;
+}
+
+input:-internal-autofill-selected,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 2em rgba(255, 255, 255, 0) inset !important;
+  background-color: transparent !important;
+  background-clip: text;
+}
