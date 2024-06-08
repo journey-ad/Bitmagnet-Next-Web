@@ -1,0 +1,14 @@
+{
+  "COMMON": {
+    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
+  },
+  "Search": {
+    "placeholder": "搜索",
+    "results_found": "找到约 {count} 条结果",
+    "more_files": "…还有 {count} 个文件",
+    "magnet": "磁力链接",
+    "file_size": "文件大小: {size}",
+    "file_count": "文件数量: {count}",
+    "created_at": "收录时间: {time}"
+  }
+}
