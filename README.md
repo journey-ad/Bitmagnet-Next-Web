@@ -51,3 +51,11 @@ After modifying the `.npmrc` file, you need to run `pnpm install` again to ensur
 ## License
 
 Licensed under the [MIT license](https://github.com/nextui-org/next-app-template/blob/main/LICENSE).
+
+
+
+```sql
+create extension pg_trgm;
+CREATE INDEX idx_torrents_name_1 ON torrents USING gin (name gin_trgm_ops);
+CREATE INDEX idx_torrent_files_path_1 ON torrent_files USING gin (path gin_trgm_ops);
+```

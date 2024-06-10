@@ -1,26 +1,97 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@nextui-org/react";
 
-import Search from "@/components/search";
+import SearchInput from "@/components/SearchInput";
 import SearchResultsList from "@/components/SearchResultsList";
 import apiFetch from "@/utils/api";
 import { MagnetIcon } from "@/components/icons";
+import { siteConfig } from "@/config/site";
+import { Toast } from "@/utils/Toast";
+import {
+  DEFAULT_SORT_TYPE,
+  SEARCH_PAGE_SIZE,
+  DEFAULT_FILTER_TIME,
+  DEFAULT_FILTER_SIZE,
+  SEARCH_PAGE_MAX,
+} from "@/config/constant";
 
-async function fetchData(keyword: string, limit: number, offset: number) {
-  const params = new URLSearchParams();
+type SearchParams = {
+  keyword: string;
+  p?: number;
+  ps?: number;
+  sortType?: string;
+  filterTime?: string;
+  filterSize?: string;
+};
 
-  params.set("keyword", keyword);
-  params.set("limit", String(limit || 10));
-  params.set("offset", String(offset || 0));
+type SearchRequestType = {
+  keyword: string;
+  limit?: number;
+  offset?: number;
+  sortType?: string;
+  filterTime?: string;
+  filterSize?: string;
+};
 
-  console.log(keyword, limit, offset);
+let cachedSearchOption: SearchParams | null = null;
+let totalCount = 0;
 
-  const data = await apiFetch(`/api/search?${params.toString()}`);
+// Fetch data from the API based on search parameters
+async function fetchData({
+  keyword,
+  limit = SEARCH_PAGE_SIZE,
+  offset = 0,
+  sortType,
+  filterTime,
+  filterSize,
+}: SearchRequestType): Promise<any> {
+  const params = new URLSearchParams({
+    keyword,
+    limit: String(limit),
+    offset: String(offset),
+  });
 
-  return data;
+  if (sortType) params.set("sortType", sortType);
+  if (filterTime) params.set("filterTime", filterTime);
+  if (filterSize) params.set("filterSize", filterSize);
+
+  // Check if it is a new search
+  const isNewSearch =
+    !cachedSearchOption ||
+    keyword !== cachedSearchOption.keyword ||
+    filterTime !== cachedSearchOption.filterTime ||
+    filterSize !== cachedSearchOption.filterSize;
+
+  if (isNewSearch) {
+    params.set("withTotalCount", "true");
+    cachedSearchOption = null; // Reset cachedSearchOption for new search
+  }
+
+  try {
+    const resp = await apiFetch(`/api/search?${params.toString()}`);
+
+    if (isNewSearch) {
+      totalCount = resp.data.total_count;
+    }
+    cachedSearchOption = {
+      keyword,
+      sortType,
+      filterTime,
+      filterSize,
+      p: cachedSearchOption?.p,
+    };
+
+    return resp;
+  } catch (error: any) {
+    console.error(error);
+    Toast.error("Error: " + error.message);
+    redirect("/");
+  }
 }
 
+// Generate metadata for the search page
 export async function generateMetadata({
   searchParams: { keyword },
 }: {
@@ -33,33 +104,58 @@ export async function generateMetadata({
   };
 }
 
+// Get search options from the search parameters
+function getSearchOption(searchParams: SearchParams) {
+  const isNewSearch =
+    !cachedSearchOption || searchParams.keyword !== cachedSearchOption.keyword;
+
+  return {
+    keyword: searchParams.keyword,
+    p: Math.min(isNewSearch ? 1 : searchParams.p || 1, SEARCH_PAGE_MAX),
+    ps: searchParams.ps || SEARCH_PAGE_SIZE,
+    sortType: searchParams.sortType || DEFAULT_SORT_TYPE,
+    filterTime: searchParams.filterTime || DEFAULT_FILTER_TIME,
+    filterSize: searchParams.filterSize || DEFAULT_FILTER_SIZE,
+  };
+}
+
+// Component to render the search page
 export default async function SearchPage({
-  searchParams: { keyword, p, ps = 10 },
+  searchParams,
 }: {
-  searchParams: { keyword: string; p: number; ps?: number };
+  searchParams: SearchParams;
 }) {
-  const pageConf = {
-    limit: ps,
-    offset: (p - 1) * ps,
-  };
+  const searchOption = getSearchOption(searchParams);
 
-  const { data } = await fetchData(keyword, pageConf.limit, pageConf.offset);
-
-  const searchOption = {
-    keyword,
-    p: Number(p) || 1,
-    ps: Number(pageConf.limit) || 10,
-  };
+  const start_time = Date.now();
+  const { data } = await fetchData({
+    keyword: searchOption.keyword,
+    limit: searchOption.ps, // Number of items per page
+    offset: (searchOption.p - 1) * searchOption.ps, // Offset calculated based on the page number
+    sortType: searchOption.sortType,
+    filterTime: searchOption.filterTime,
+    filterSize: searchOption.filterSize,
+  });
+  const cost_time = Date.now() - start_time;
 
   return (
     <div className="w-full max-w-3xl">
-      <div className="flex items-center max-w-xl mb-4">
-        <Link className="mr-4 text-5xl" href="/">
+      <div className="flex items-center mb-4">
+        <Link
+          className="mr-4 text-4xl md:text-5xl"
+          href="/"
+          title={siteConfig.name}
+        >
           <MagnetIcon />
         </Link>
-        <Search defaultValue={keyword} />
+        <SearchInput defaultValue={searchOption.keyword} />
       </div>
-      <SearchResultsList data={data} searchOption={searchOption} />
+      <SearchResultsList
+        cost_time={cost_time}
+        resultList={data.torrents}
+        searchOption={searchOption}
+        total_count={totalCount}
+      />
     </div>
   );
 }

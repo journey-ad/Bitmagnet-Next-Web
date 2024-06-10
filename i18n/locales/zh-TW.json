@@ -2,22 +2,54 @@
   "COMMON": {
     "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
   },
+  "ERROR_MESSAGE": { },
   "Metadata": {
     "search": {
-      "title": "{keyword} 的搜索结果"
+      "title": "{keyword} 的搜索結果"
     }
   },
   "Search": {
-    "placeholder": "搜索...",
-    "results_found": "找到约 {count} 条结果",
-    "more_files": "…还有 {count} 个文件",
-    "magnet": "磁力链接",
+    "placeholder": "搜你想搜...",
+    "filterLabel": {
+      "sortType": "排序方式",
+      "filterTime": "按時間過濾",
+      "filterSize": "按大小過濾"
+    },
+    "sortType": {
+      "default": "默認排序",
+      "size": "文件大小",
+      "count": "文件數量",
+      "date": "收錄時間"
+    },
+    "filterTime": {
+      "all": "不限時間",
+      "gt-1day": "最近一天內",
+      "gt-7day": "最近一週內",
+      "gt-31day": "最近一月內",
+      "gt-365day": "最近一年內"
+    },
+    "filterSize": {
+      "all": "不限大小",
+      "lt100mb": "小於100MB",
+      "gt100mb-lt500mb": "100MB-500MB",
+      "gt500mb-lt1gb": "500MB-1GB",
+      "gt1gb-lt5gb": "1GB-5GB",
+      "gt5gb": "大於5GB"
+    },
+    "results_found": "找到約 {count} 條結果",
+    "more_files": "…還有 {count} 個文件",
+    "magnet": "磁力連結",
     "file_size": "文件大小: {size}",
-    "file_count": "文件数量: {count}",
-    "created_at": "收录时间: {time}"
+    "file_count": "文件數量: {count}",
+    "created_at": "收錄時間: {time}"
   },
   "Detail": {
-    "magnet": "磁链地址",
+    "magnet": "磁鏈地址",
     "file_list": "文件列表"
+  },
+  "Toast": {
+    "keyword_too_short": "關鍵字需要大於兩個字元",
+    "keyword_empty": "請輸入關鍵字",
+    "copy_success": "已複製磁力連結"
   }
 }

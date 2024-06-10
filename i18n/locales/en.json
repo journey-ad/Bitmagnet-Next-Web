@@ -1,6 +1,55 @@
 {
+  "COMMON": {
+    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
+  },
+  "ERROR_MESSAGE": { },
+  "Metadata": {
+    "search": {
+      "title": "{keyword} search results"
+    }
+  },
   "Search": {
-    "placeholder": "搜索",
-    "results_found": "找到约 {count} 条结果"
+    "placeholder": "Search what you want...",
+    "filterLabel": {
+      "sortType": "Sort by",
+      "filterTime": "Filter by time",
+      "filterSize": "Filter by size"
+    },
+    "sortType": {
+      "default": "Default sorting",
+      "size": "File size",
+      "count": "File count",
+      "date": "Date added"
+    },
+    "filterTime": {
+      "all": "All time",
+      "gt-1day": "Past day",
+      "gt-7day": "Past week",
+      "gt-31day": "Past month",
+      "gt-365day": "Past year"
+    },
+    "filterSize": {
+      "all": "All sizes",
+      "lt100mb": "Less than 100MB",
+      "gt100mb-lt500mb": "100MB-500MB",
+      "gt500mb-lt1gb": "500MB-1GB",
+      "gt1gb-lt5gb": "1GB-5GB",
+      "gt5gb": "More than 5GB"
+    },
+    "results_found": "About {count} results found",
+    "more_files": "…and {count} more files",
+    "magnet": "Magnet link",
+    "file_size": "File size: {size}",
+    "file_count": "File count: {count}",
+    "created_at": "Date added: {time}"
+  },
+  "Detail": {
+    "magnet": "Magnet address",
+    "file_list": "File list"
+  },
+  "Toast": {
+    "keyword_too_short": "Keyword needs to be at least 2 characters",
+    "keyword_empty": "Please enter a keyword",
+    "copy_success": "Copied to clipboard"
   }
 }

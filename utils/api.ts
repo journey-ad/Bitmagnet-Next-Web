@@ -1,4 +1,4 @@
-function getBaseUrl() {
+export function getBaseUrl() {
   // Check if NEXT_PUBLIC_BASE_URL is set
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL;

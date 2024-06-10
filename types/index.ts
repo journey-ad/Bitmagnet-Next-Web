@@ -5,7 +5,7 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 };
 
 export type SearchResultsListProps = {
-  items: TorrentItemProps[];
+  torrents: TorrentItemProps[];
   total_count: number;
   has_more: boolean;
 };

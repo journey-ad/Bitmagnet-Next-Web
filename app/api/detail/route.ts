@@ -1,42 +1,36 @@
 import { NextResponse } from "next/server";
 import { gql } from "@apollo/client";
 
-import client from "@/utils/apolloClient";
+import client from "@/lib/apolloClient";
 
-const SEARCH = gql`
-  query TorrentContentSearch($query: SearchQueryInput) {
-    torrentContent {
-      search(query: $query) {
-        items {
-          hash: infoHash
-          torrent {
-            hash: infoHash
-            name
-            size
-            magnet_uri: magnetUri
-            single_file: singleFile
-            files_count: filesCount
-            files {
-              index
-              path
-              size
-              extension
-            }
-          }
-          created_at: createdAt
-          updated_at: updatedAt
-        }
-        total_count: totalCount
-        has_more: hasNextPage
+// Define the GraphQL query to fetch torrent details by hash
+const query = gql`
+  query TorrentByHash($hash: String!) {
+    torrentByHash(hash: $hash) {
+      hash
+      name
+      size
+      magnet_uri
+      single_file
+      files_count
+      files {
+        index
+        path
+        extension
+        size
       }
+      created_at
+      updated_at
     }
   }
 `;
 
+// Function to handle GET requests
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const hash = searchParams.get("hash");
 
+  // Return a 400 response if the hash parameter is missing
   if (!hash) {
     return NextResponse.json(
       {
@@ -50,34 +44,16 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Execute the GraphQL query with the provided hash variable
     const { data } = await client.query({
-      query: SEARCH,
-      variables: {
-        query: {
-          queryString: hash,
-          limit: 1,
-          hasNextPage: false,
-          cached: true,
-          totalCount: false,
-          offset: 0,
-        },
-      },
+      query,
+      variables: { hash },
     });
 
-    const item = { ...data.torrentContent.search.items[0] };
-
-    const result = {
-      ...item.torrent,
-      ...item,
-      created_at: (new Date(item.created_at).getTime() / 1000) | 0,
-      updated_at: (new Date(item.updated_at).getTime() / 1000) | 0,
-    };
-
-    delete result.torrent;
-
+    // Return a 200 response with the query data
     return NextResponse.json(
       {
-        data: result,
+        data: data.torrentByHash,
         message: "success",
         status: 200,
       },
@@ -85,12 +61,13 @@ export async function GET(request: Request) {
         status: 200,
       },
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
+    // Return a 500 response if there's an error during the query execution
     return NextResponse.json(
       {
-        message: error,
+        message: error?.message || "Internal Server Error",
         status: 500,
       },
       {

@@ -2,14 +2,42 @@
   "COMMON": {
     "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
   },
+  "ERROR_MESSAGE": { },
   "Metadata": {
     "search": {
       "title": "{keyword} 的搜索结果"
     }
   },
   "Search": {
-    "placeholder": "搜索...",
+    "placeholder": "搜你想搜...",
+    "filterLabel": {
+      "sortType": "排序方式",
+      "filterTime": "按时间过滤",
+      "filterSize": "按大小过滤"
+    },
+    "sortType": {
+      "default": "默认排序",
+      "size": "文件大小",
+      "count": "文件数量",
+      "date": "收录时间"
+    },
+    "filterTime": {
+      "all": "不限时间",
+      "gt-1day": "最近一天内",
+      "gt-7day": "最近一周内",
+      "gt-31day": "最近一月内",
+      "gt-365day": "最近一年内"
+    },
+    "filterSize": {
+      "all": "不限大小",
+      "lt100mb": "小于100MB",
+      "gt100mb-lt500mb": "100MB-500MB",
+      "gt500mb-lt1gb": "500MB-1GB",
+      "gt1gb-lt5gb": "1GB-5GB",
+      "gt5gb": "大于5GB"
+    },
     "results_found": "找到约 {count} 条结果",
+    "cost_time": "(用时{cost_time}ms)",
     "more_files": "…还有 {count} 个文件",
     "magnet": "磁力链接",
     "file_size": "文件大小: {size}",
@@ -19,5 +47,10 @@
   "Detail": {
     "magnet": "磁链地址",
     "file_list": "文件列表"
+  },
+  "Toast": {
+    "keyword_too_short": "关键词需要大于两个字符",
+    "keyword_empty": "请输入关键词",
+    "copy_success": "已复制磁力链接"
   }
 }

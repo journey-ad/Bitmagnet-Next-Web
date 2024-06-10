@@ -1,14 +1,15 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { getLocale, getMessages } from 'next-intl/server';
-import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 import clsx from "clsx";
 
 import { Providers } from "./providers";
 
 import { siteConfig } from "@/config/site";
-import { fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
+import { fontSans, fontNoto } from "@/config/fonts";
+import { BgEffect } from "@/components/BgEffect";
+import { FloatTool } from "@/components/FloatTool";
 
 export const metadata: Metadata = {
   title: {
@@ -43,14 +44,17 @@ export default async function RootLayout({
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
+          locale.startsWith("zh") ? fontNoto.className : "",
         )}
       >
         <NextIntlClientProvider messages={messages}>
           <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
             <div className="relative flex flex-col h-screen">
-              <main className="container mx-auto max-w-6xl flex-grow">
+              <BgEffect />
+              <main className="container mx-auto max-w-6xl flex-grow z-10">
                 {children}
               </main>
+              <FloatTool />
             </div>
           </Providers>
         </NextIntlClientProvider>

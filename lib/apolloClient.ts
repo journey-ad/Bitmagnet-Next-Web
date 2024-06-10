@@ -1,8 +1,10 @@
 import { ApolloClient, InMemoryCache, from, HttpLink } from "@apollo/client";
 import { removeTypenameFromVariables } from "@apollo/client/link/remove-typename";
 
+import { getBaseUrl } from "@/utils/api";
+
 const httpLink = new HttpLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_URI, // 从环境变量中获取 URI
+  uri: `${getBaseUrl()}/api/graphql`, // 从环境变量中获取 URI
 });
 
 const removeTypename = removeTypenameFromVariables();

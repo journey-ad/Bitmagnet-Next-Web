@@ -1,62 +1,82 @@
 import { NextResponse } from "next/server";
 import { gql } from "@apollo/client";
+import { z } from "zod";
 
-import client from "@/utils/apolloClient";
+import client from "@/lib/apolloClient";
+import {
+  SEARCH_PARAMS,
+  SEARCH_KEYWORD_LENGTH_MIN,
+  SEARCH_KEYWORD_LENGTH_MAX,
+  SEARCH_PAGE_SIZE,
+  DEFAULT_SORT_TYPE,
+  DEFAULT_FILTER_TIME,
+  DEFAULT_FILTER_SIZE,
+} from "@/config/constant";
 
+// GraphQL query to search for torrents
 const SEARCH = gql`
-  query TorrentContentSearch($query: SearchQueryInput) {
-    torrentContent {
-      search(query: $query) {
-        items {
-          hash: infoHash
-          torrent {
-            hash: infoHash
-            name
-            size
-            magnet_uri: magnetUri
-            single_file: singleFile
-            files_count: filesCount
-            files {
-              index
-              path
-              size
-              extension
-            }
-          }
-          created_at: createdAt
-          updated_at: updatedAt
+  query Search($queryInput: SearchQueryInput!) {
+    search(queryInput: $queryInput) {
+      torrents {
+        hash
+        name
+        size
+        magnet_uri
+        single_file
+        files_count
+        files {
+          index
+          path
+          extension
+          size
         }
-        total_count: totalCount
-        has_more: hasNextPage
+        created_at
+        updated_at
       }
+      total_count
+      has_more
     }
   }
 `;
 
-const TOTAL = gql`
-  query TorrentContentSearch($query: SearchQueryInput) {
-    torrentContent {
-      search(query: $query) {
-        items {
-          torrent {
-            hash: infoHash
-          }
-        }
-      }
-    }
-  }
-`;
+// Define the schema for the request parameters using Zod
+const schema = z.object({
+  keyword: z
+    .string()
+    .min(SEARCH_KEYWORD_LENGTH_MIN)
+    .max(SEARCH_KEYWORD_LENGTH_MAX),
+  offset: z.coerce.number().min(0).default(0),
+  limit: z.coerce
+    .number()
+    .min(1)
+    .max(SEARCH_PAGE_SIZE)
+    .default(SEARCH_PAGE_SIZE),
+  sortType: z.enum(SEARCH_PARAMS.sortType).default(DEFAULT_SORT_TYPE),
+  filterTime: z.enum(SEARCH_PARAMS.filterTime).default(DEFAULT_FILTER_TIME),
+  filterSize: z.enum(SEARCH_PARAMS.filterSize).default(DEFAULT_FILTER_SIZE),
+  withTotalCount: z.coerce.boolean().default(false),
+});
 
 export async function GET(request: Request) {
+  // Extract search parameters from the request URL
   const { searchParams } = new URL(request.url);
-  const keyword = searchParams.get("keyword");
-  const offset = Number(searchParams.get("offset")) || 0;
-  const limit = Number(searchParams.get("limit")) || 20;
+  const params = Object.fromEntries(searchParams.entries());
 
-  if (!keyword) {
+  let safeParams;
+
+  // Validate and parse the parameters using Zod schema
+  try {
+    safeParams = schema.parse(params);
+  } catch (error: any) {
+    console.error(error);
+
+    const { path, message } = error.errors[0] || {};
+    const errMessage = path ? `${path[0]}: ${message}` : message;
+
     return NextResponse.json(
       {
-        message: "keyword is required",
+        data: null,
+        message: errMessage || "Invalid request",
         status: 400,
       },
       {
@@ -65,73 +85,32 @@ export async function GET(request: Request) {
     );
   }
 
+  // Perform the search query using Apollo Client
   try {
-    const query = {
-      queryString: keyword,
-      hasNextPage: false,
-      cached: true,
-      totalCount: false,
-      offset: 0,
-    };
-
-    const reqArr = [
-      client.query({
-        query: SEARCH,
-        variables: {
-          query: {
-            ...query,
-            limit,
-            offset,
-          },
-        },
-      }),
-      client.query({
-        query: TOTAL,
-        variables: {
-          query: {
-            ...query,
-            limit: 1000, // 默认返回的total_count不准确，先用这种方法代替
-          },
-        },
-      }),
-    ];
-
-    const [respData, respTotal] = await Promise.all(reqArr);
-
-    const torrents = { ...respData.data.torrentContent.search };
-    const total = respTotal.data.torrentContent.search.items.length;
-
-    torrents.items = torrents.items.map((item: any) => {
-      const result = {
-        ...item.torrent,
-        ...item,
-        created_at: (new Date(item.created_at).getTime() / 1000) | 0,
-        updated_at: (new Date(item.updated_at).getTime() / 1000) | 0,
-      };
-
-      delete result.torrent;
-
-      return result;
+    const { data } = await client.query({
+      query: SEARCH,
+      variables: {
+        queryInput: safeParams,
+      },
     });
-
-    torrents.total_count = total;
 
     return NextResponse.json(
       {
-        data: torrents,
-        message: "success",
+        data: data.search,
+        message: "Success",
         status: 200,
       },
       {
         status: 200,
       },
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     return NextResponse.json(
       {
-        message: error,
+        data: null,
+        message: error?.message || "Internal Server Error",
         status: 500,
       },
       {
