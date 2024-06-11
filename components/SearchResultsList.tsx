@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { Pagination, Select, SelectItem } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
+import { useIsSSR } from "@react-aria/ssr";
 
 import SearchResultsItem from "./SearchResultsItem";
 
@@ -28,6 +29,7 @@ export default function SearchResultsList({
   };
 }) {
   const router = useRouter();
+  const isSSR = useIsSSR();
   const t = useTranslations();
 
   const handleFilterChange = (type: string, value: string) => {
@@ -74,51 +76,43 @@ export default function SearchResultsList({
 
   return (
     <>
-      <div className="flex my-4">
-        <Select
-          className="w-full"
-          defaultSelectedKeys={[searchOption.sortType]}
-          label={t("Search.filterLabel.sortType")}
-          selectedKeys={[searchOption.sortType]}
-          size="sm"
-          onChange={(e) => handleFilterChange("sortType", e.target.value)}
-        >
-          {SEARCH_PARAMS.sortType.map((item) => (
-            <SelectItem key={item} className="w-full">
-              {t(`Search.sortType.${item}`)}
-            </SelectItem>
-          ))}
-        </Select>
-
-        <Select
-          className="w-full ml-4"
-          defaultSelectedKeys={[searchOption.filterSize]}
-          label={t("Search.filterLabel.filterSize")}
-          selectedKeys={[searchOption.filterSize]}
-          size="sm"
-          onChange={(e) => handleFilterChange("filterSize", e.target.value)}
-        >
-          {SEARCH_PARAMS.filterSize.map((item) => (
-            <SelectItem key={item} className="w-full">
-              {t(`Search.filterSize.${item}`)}
-            </SelectItem>
-          ))}
-        </Select>
-
-        <Select
-          className="w-full ml-4"
-          defaultSelectedKeys={[searchOption.filterTime]}
-          label={t("Search.filterLabel.filterTime")}
-          selectedKeys={[searchOption.filterTime]}
-          size="sm"
-          onChange={(e) => handleFilterChange("filterTime", e.target.value)}
-        >
-          {SEARCH_PARAMS.filterTime.map((item) => (
-            <SelectItem key={item} className="w-full">
-              {t(`Search.filterTime.${item}`)}
-            </SelectItem>
-          ))}
-        </Select>
+      <div className="flex gap-2 my-4">
+        {Object.entries(SEARCH_PARAMS).map(([key, value]) => (
+          <Select
+            key={key}
+            className="w-full"
+            classNames={{
+              label: "text-xs md:text-sm",
+              trigger: "h-10 min-h-10 md:h-12 md:min-h-12",
+              value: "text-xs md:text-sm",
+            }}
+            defaultSelectedKeys={[
+              searchOption[key as keyof typeof searchOption],
+            ]}
+            label={t(`Search.filterLabel.${key}`)}
+            popoverProps={{
+              className: "w-full flex justify-center",
+              classNames: {
+                content: "bg-opacity-70 backdrop-blur-sm min-w-fit px-1",
+              },
+            }}
+            selectedKeys={[searchOption[key as keyof typeof searchOption]]}
+            size="sm"
+            onChange={(e) => handleFilterChange(key, e.target.value)}
+          >
+            {value.map((item) => (
+              <SelectItem
+                key={item}
+                className="w-full !bg-opacity-60"
+                classNames={{
+                  title: "text-xs md:text-sm",
+                }}
+              >
+                {t(`Search.${key}.${item}`)}
+              </SelectItem>
+            ))}
+          </Select>
+        ))}
       </div>
 
       <div className="text-sm text-gray-500 mb-4">
@@ -137,14 +131,18 @@ export default function SearchResultsList({
         </div>
       ))}
 
-      {pagiConf.total > 1 && (
+      {!isSSR && pagiConf.total > 1 && (
         <Pagination
           key={`pagi_${Object.values(searchOption).join("_")}`}
-          showControls
           className="flex justify-center"
+          classNames={{
+            wrapper: "gap-x-2",
+          }}
           initialPage={pagiConf.page}
           page={pagiConf.page}
+          showControls={$env.isDesktop}
           siblings={pagiConf.siblinds}
+          size={$env.isMobile ? "lg" : "md"}
           total={pagiConf.total}
           onChange={(page) => handlePageChange(page, searchOption)}
         />

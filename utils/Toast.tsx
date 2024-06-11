@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import clsx from "clsx";
 
 import { $env } from "@/utils";
 
@@ -93,7 +94,13 @@ const ToastContainer: React.FC<ToastProps> = ({ messages, removeMessage }) => {
       {messages.map((message) => (
         <div
           key={message.id}
-          className={`flex items-center w-full max-w-xs px-3 py-2 mb-3 text-gray-500 bg-white rounded-lg shadow bg-opacity-90 dark:text-gray-400 dark:bg-gray-800 ${removingMessages.includes(message.id) ? "animate-fade-out" : "animate-fade-in-up"}`}
+          className={clsx(
+            "flex items-center w-full max-w-xs px-3 py-2 mb-3 text-gray-500 bg-white rounded-lg shadow bg-opacity-90 dark:text-gray-400 dark:bg-gray-800",
+            {
+              "animate-fade-out": removingMessages.includes(message.id),
+              "animate-fade-in-up": !removingMessages.includes(message.id),
+            },
+          )}
           role="alert"
         >
           {iconMap[message.type]}
@@ -117,7 +124,7 @@ setTimeout(() => {
     document.querySelector(".__toast-container") ||
     document.createElement("div");
   toastRoot.className = "__toast-container";
-  toastRoot.style.zIndex = "100000";
+  toastRoot.style.zIndex = "10001";
 
   document.body.appendChild(toastRoot);
   root = createRoot(toastRoot);

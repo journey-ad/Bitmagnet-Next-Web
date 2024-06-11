@@ -1,6 +1,6 @@
 import SearchInput from "@/components/SearchInput";
 import { MagnetIcon } from "@/components/icons";
-import { ToggleTheme } from "@/components/FloatTool";
+import { ToggleTheme, SwitchLanguage } from "@/components/FloatTool";
 import { siteConfig } from "@/config/site";
 
 export default function Home() {
@@ -10,7 +10,8 @@ export default function Home() {
         <MagnetIcon className="w-[140px] h-[140px] transition-colors duration-400" />
       </h1>
       <SearchInput />
-      <div className="fixed bottom-2 right-2 md:hidden">
+      <div className="fixed bottom-4 right-4 flex flex-col gap-1">
+        <SwitchLanguage noBg />
         <ToggleTheme noBg />
       </div>
     </section>

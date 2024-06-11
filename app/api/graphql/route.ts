@@ -59,9 +59,9 @@ const resolvers = {
       const orderByMap: { [key: string]: string } = {
         size: "torrents.size DESC",
         count: "COALESCE(torrents.files_count, 0) DESC",
-        date: "torrents.created_at DESC",
+        date: "torrents.created_at ASC",
       };
-      const orderBy = orderByMap[queryInput.sortType] || "";
+      const orderBy = orderByMap[queryInput.sortType] || "torrents.created_at DESC";
 
       // Determine the time filter based on the filterTime
       const timeFilterMap: { [key: string]: string } = {
@@ -104,8 +104,10 @@ const resolvers = {
       }
 
       // Construct the keyword filter condition
-      const keywordFilter = keywords
-        .map((_: any, i: number) => `torrents.name ILIKE $${i + 1}`)
+      let keywordFilter = `torrents.name ILIKE $1 OR `;
+
+      keywordFilter += keywords
+        .map((_: any, i: number) => `torrents.name ILIKE $${i + 2}`)
         .join(" AND ");
 
       // SQL query to fetch filtered torrent data and files information
@@ -126,8 +128,8 @@ const resolvers = {
             ${timeFilter}      -- 时间范围过滤条件
             ${sizeFilter}      -- 大小范围过滤条件
           ${orderBy ? `ORDER BY ${orderBy}` : ""} -- 排序方式
-          LIMIT $${keywords.length + 1}    -- 返回数量
-          OFFSET $${keywords.length + 2}   -- 分页偏移
+          LIMIT $${keywords.length + 2}    -- 返回数量
+          OFFSET $${keywords.length + 3}   -- 分页偏移
         )
         -- 从过滤后的数据中查询文件信息
         SELECT 
@@ -157,10 +159,13 @@ const resolvers = {
       `;
 
       const params = [
+        `%${queryInput.keyword}%`,
         ...keywords.map((k: any) => `%${k}%`),
         queryInput.limit,
         queryInput.offset,
       ];
+
+      // console.log(sql, params);
 
       const queryArr = [query(sql, params)];
 
@@ -176,7 +181,10 @@ const resolvers = {
             ${sizeFilter}
           ) AS limited_total;
         `;
-        const countParams = [...keywords.map((k: any) => `%${k}%`)];
+        const countParams = [
+          `%${queryInput.keyword}%`,
+          ...keywords.map((k: any) => `%${k}%`),
+        ];
 
         queryArr.push(query(countSql, countParams));
       } else {

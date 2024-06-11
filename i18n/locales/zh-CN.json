@@ -2,7 +2,11 @@
   "COMMON": {
     "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
   },
-  "ERROR_MESSAGE": { },
+  "ERROR_MESSAGE": {
+    "INTERNAL_SERVER_ERROR": "发生意外错误",
+    "NOT_FOUND": "资源不存在",
+    "GoHome": "返回首页"
+   },
   "Metadata": {
     "search": {
       "title": "{keyword} 的搜索结果"
@@ -50,7 +54,6 @@
   },
   "Toast": {
     "keyword_too_short": "关键词需要大于两个字符",
-    "keyword_empty": "请输入关键词",
-    "copy_success": "已复制磁力链接"
+    "copy_success": "磁力链接已复制到剪贴板"
   }
 }

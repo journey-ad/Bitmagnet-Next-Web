@@ -8,7 +8,7 @@ import SearchResultsList from "@/components/SearchResultsList";
 import apiFetch from "@/utils/api";
 import { MagnetIcon } from "@/components/icons";
 import { siteConfig } from "@/config/site";
-import { Toast } from "@/utils/Toast";
+import { Toast } from "@/utils";
 import {
   DEFAULT_SORT_TYPE,
   SEARCH_PAGE_SIZE,
@@ -140,9 +140,9 @@ export default async function SearchPage({
 
   return (
     <div className="w-full max-w-3xl">
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-7">
         <Link
-          className="mr-4 text-4xl md:text-5xl"
+          className="mb-[-2px] mr-2 md:mr-4 leading-none text-[50px] md:text-[60px]"
           href="/"
           title={siteConfig.name}
         >

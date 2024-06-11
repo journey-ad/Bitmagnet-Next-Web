@@ -10,6 +10,7 @@ import { UI_BACKGROUND_ANIMATION } from "@/config/constant";
 
 export const BgEffect = () => {
   const [init, setInit] = useState(false);
+  const [colorScheme, setColorScheme] = useState<"light" | "dark">("light");
 
   const { theme } = useTheme();
   const isSSR = useIsSSR();
@@ -21,6 +22,22 @@ export const BgEffect = () => {
     }),
     [],
   );
+
+  useEffect(() => {
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+      if (!mediaQuery) return;
+
+      mediaQuery.addEventListener("change", (event) => {
+        setColorScheme(event.matches ? "dark" : "light");
+      });
+
+      setColorScheme(mediaQuery.matches ? "dark" : "light");
+    } else {
+      setColorScheme(theme === "dark" ? "dark" : "light");
+    }
+  }, [theme]);
 
   useEffect(() => {
     if (!UI_BACKGROUND_ANIMATION) return;
@@ -39,7 +56,7 @@ export const BgEffect = () => {
       ({
         background: {
           image:
-            theme === "light"
+            colorScheme === "light"
               ? `linear-gradient(145deg, ${colorPreset.light[0]}, ${colorPreset.light[1]})`
               : `linear-gradient(145deg, ${colorPreset.dark[0]}, ${colorPreset.dark[1]})`,
         },
@@ -63,13 +80,13 @@ export const BgEffect = () => {
         },
         particles: {
           color: {
-            value: theme === "light" ? "#c1c7d1" : "#3b4250",
+            value: colorScheme === "light" ? "#c1c7d1" : "#3b4250",
           },
           links: {
-            value: theme === "light" ? "#c1c7d1" : "#3b4250",
+            value: colorScheme === "light" ? "#c1c7d1" : "#3b4250",
             distance: 150,
             enable: true,
-            opacity: theme === "light" ? 0.8 : 0.1,
+            opacity: colorScheme === "light" ? 0.8 : 0.1,
             width: 1,
           },
           move: {
@@ -100,14 +117,13 @@ export const BgEffect = () => {
         },
         detectRetina: true,
       }) as any,
-    [theme, colorPreset],
+    [colorScheme, colorPreset],
   );
 
   if (isSSR) return null;
 
   if (!UI_BACKGROUND_ANIMATION) {
-    const linearGradient =
-      theme === "light" ? colorPreset.light : colorPreset.dark;
+    const linearGradient = colorPreset[colorScheme];
 
     return (
       <div

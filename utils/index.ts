@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import Cookie from "js-cookie";
 
 import { SEARCH_KEYWORD_SPLIT_REGEX } from "@/config/constant";
 
@@ -60,9 +61,14 @@ export function getSizeColor(size: number | string) {
 }
 
 export function parseHighlight(text: string, highlight: string) {
+  if (!text || !highlight) {
+    return text;
+  }
   const keywords = highlight
     .split(SEARCH_KEYWORD_SPLIT_REGEX)
     .filter((k: string) => k.trim() !== "");
+
+  keywords.unshift(highlight);
 
   if (keywords.length === 0) {
     return text;
@@ -138,3 +144,6 @@ export const $env = {
     return !this.isServer && !this.isMobile;
   },
 };
+
+export { Cookie }
+export { Toast } from "./Toast";

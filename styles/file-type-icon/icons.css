@@ -1,0 +1,66 @@
+.file-type-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-size: 1.3em;
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin-right: 4px;
+  background-image: var(--icon);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: 0 2px;
+}
+
+:root {
+  --icon-folder: url(./file-folder.svg);
+  --icon-file: url(./page-facing-up.svg);
+  --icon-image: url(./framed-picture.svg);
+  --icon-video: url(./film-frames.svg);
+  --icon-audio: url(./musical-note.svg);
+  --icon-book: url(./books.svg);
+  --icon-web: url(./globe-with-meridians.svg);
+  --icon-archive: url(./package.svg);
+  --icon-disk: url(./optical-disk.svg);
+  --icon-executable: url(./gear.svg);
+}
+
+.file-type-icon[data-icon="folder"] {
+  --icon: var(--icon-folder);
+}
+
+.file-type-icon[data-icon="file"] {
+  --icon: var(--icon-file);
+}
+
+.file-type-icon[data-icon="image"] {
+  --icon: var(--icon-image);
+}
+
+.file-type-icon[data-icon="video"] {
+  --icon: var(--icon-video);
+}
+
+.file-type-icon[data-icon="audio"] {
+  --icon: var(--icon-audio);
+}
+
+.file-type-icon[data-icon="book"] {
+  --icon: var(--icon-book);
+}
+
+.file-type-icon[data-icon="web"] {
+  --icon: var(--icon-web);
+}
+
+.file-type-icon[data-icon="archive"] {
+  --icon: var(--icon-archive);
+}
+
+.file-type-icon[data-icon="disk"] {
+  --icon: var(--icon-disk);
+}
+
+.file-type-icon[data-icon="executable"] {
+  --icon: var(--icon-executable);
+}

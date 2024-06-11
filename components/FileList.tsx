@@ -3,6 +3,7 @@
 import React from "react";
 import { Link, Chip } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
+import clsx from "clsx";
 
 import { TorrentItemProps } from "@/types";
 import {
@@ -125,16 +126,16 @@ function FileItem({
     <li
       key={file.index}
       className="flex flex-col justify-center mb-1"
-      data-extension={file.type === "file" ? file.extension : null}
-      data-index={file.index}
-      data-name={file.name}
-      data-path={file.path}
-      data-size={file.type === "file" ? file.size : null}
-      data-type={file.type}
+      // data-extension={file.type === "file" ? file.extension : null}
+      // data-index={file.index}
+      // data-name={file.name}
+      // data-path={file.path}
+      // data-size={file.type === "file" ? file.size : null}
+      // data-type={file.type}
     >
       <div className="file-item flex text-xs md:text-sm">
         <FileTypeIcon
-          className="mr-1 mb-auto dark:brightness-80"
+          className="dark:brightness-90"
           extension={file.type === "folder" ? "folder" : file.extension}
         />
         <span
@@ -143,17 +144,18 @@ function FileItem({
               ? parseHighlight(file.name, highlight)
               : file.name,
           }}
-          className={
-            "min-w-0 break-all " +
-            (file.type === "folder" ? "text-default-500" : "")
-          }
+          className={clsx(
+            "min-w-0 break-all",
+            file.type === "folder" ? "text-default-500" : "",
+          )}
           title={file.path}
         />
         {file.type === "file" && file.size && (
           <Chip
-            className={`h-5 mx-1 mb-auto px-[2px] text-[10px] font-bold dark:invert dark:brightness-105 ${getSizeColor(
-              file.size,
-            )}`}
+            className={clsx(
+              "h-5 mx-1 mb-auto px-[2px] text-[10px] font-bold dark:invert dark:brightness-105",
+              getSizeColor(file.size),
+            )}
             size="sm"
           >
             {formatByteSize(file.size)}
@@ -161,7 +163,7 @@ function FileItem({
         )}
       </div>
       {file.type === "folder" && (
-        <ul className="sub-list pl-6">
+        <ul className="sub-list pl-6 pt-1">
           {file.children.map((child) => (
             <FileItem key={child.index} file={child} highlight={highlight} />
           ))}

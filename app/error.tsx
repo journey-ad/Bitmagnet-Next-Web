@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
   useEffect(() => {
@@ -15,17 +16,31 @@ export default function Error({
     console.error(error);
   }, [error]);
 
+  console.log("error", error.message, error.digest);
+
+  const t = useTranslations("ERROR_MESSAGE");
+
   return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button
-        onClick={
-          // Attempt to recover by trying to re-render the segment
-          () => reset()
-        }
+    <div className="flex flex-col justify-center mx-auto w-4/5 pb-[10vh] max-w-lg h-full">
+      <h1 className="mb-4 text-[30px] md:text-[50px] leading-tight font-medium text-gray-700">
+        {t("INTERNAL_SERVER_ERROR")}
+      </h1>
+
+      <div className="flex flex-col gap-y-1 w-full mb-6 break-words text-sm md:text-lg text-gray-600">
+        <p>
+          <span className="font-medium">{t("Message")}</span>: {error.message}
+        </p>
+        <p>
+          <span className="font-medium">{t("Digest")}</span>: {error.digest}
+        </p>
+      </div>
+
+      <a
+        className="px-4 py-2 mr-auto font-medium text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-all duration-200 ease-in-out"
+        href="/"
       >
-        Try again
-      </button>
+        {t("GoHome")}
+      </a>
     </div>
   );
 }

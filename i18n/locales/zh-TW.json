@@ -2,7 +2,11 @@
   "COMMON": {
     "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
   },
-  "ERROR_MESSAGE": { },
+  "ERROR_MESSAGE": {
+    "INTERNAL_SERVER_ERROR": "發生意外錯誤",
+    "NOT_FOUND": "資源不存在",
+    "GoHome": "返回首頁"
+  },
   "Metadata": {
     "search": {
       "title": "{keyword} 的搜索結果"
@@ -37,6 +41,7 @@
       "gt5gb": "大於5GB"
     },
     "results_found": "找到約 {count} 條結果",
+    "cost_time": "(耗時{cost_time}ms)",
     "more_files": "…還有 {count} 個文件",
     "magnet": "磁力連結",
     "file_size": "文件大小: {size}",
@@ -49,7 +54,6 @@
   },
   "Toast": {
     "keyword_too_short": "關鍵字需要大於兩個字元",
-    "keyword_empty": "請輸入關鍵字",
-    "copy_success": "已複製磁力連結"
+    "copy_success": "磁力連結已複製到剪貼簿"
   }
 }

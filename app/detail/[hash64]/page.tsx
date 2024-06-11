@@ -1,16 +1,19 @@
-import { Link } from "@nextui-org/react";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { base64ToHex } from "@/utils";
 import apiFetch from "@/utils/api";
-import SearchInput from "@/components/SearchInput";
-import { MagnetIcon } from "@/components/icons";
 import { DetailContent } from "@/components/DetailContent";
-import { siteConfig } from "@/config/site";
 
 // Function to fetch torrent data based on the hash
 async function fetchData(hash64: string) {
   const hash = base64ToHex(hash64); // Convert base64 hash to hex
+
+  if (!hash || hash.length !== 20) {
+    // throw new Error("Invalid hash");
+    notFound();
+  }
+
   const data = await apiFetch(`/api/detail?hash=${hash}`); // Fetch data from API
 
   return data;
@@ -39,12 +42,6 @@ export default async function Detail({
 
   return (
     <>
-      <div className="flex items-center max-w-xl mb-4">
-        <Link className="mr-4 text-5xl" href="/" title={siteConfig.name}>
-          <MagnetIcon />
-        </Link>
-        <SearchInput />
-      </div>
       <DetailContent data={data} />
     </>
   );

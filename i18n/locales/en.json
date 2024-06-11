@@ -2,7 +2,13 @@
   "COMMON": {
     "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
   },
-  "ERROR_MESSAGE": { },
+  "ERROR_MESSAGE": { 
+    "INTERNAL_SERVER_ERROR": "Something went wrong!",
+    "NOT_FOUND": "Resource not found",
+    "Digest": "digest",
+    "Message": "message",
+    "GoHome": "Go Home"
+  },
   "Metadata": {
     "search": {
       "title": "{keyword} search results"
@@ -36,7 +42,8 @@
       "gt1gb-lt5gb": "1GB-5GB",
       "gt5gb": "More than 5GB"
     },
-    "results_found": "About {count} results found",
+    "results_found": "About {count} results found.",
+    "cost_time": "(Processed in {cost_time}ms)",
     "more_files": "…and {count} more files",
     "magnet": "Magnet link",
     "file_size": "File size: {size}",
@@ -49,7 +56,6 @@
   },
   "Toast": {
     "keyword_too_short": "Keyword needs to be at least 2 characters",
-    "keyword_empty": "Please enter a keyword",
-    "copy_success": "Copied to clipboard"
+    "copy_success": "Magnet link copied to clipboard"
   }
 }

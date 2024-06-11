@@ -19,7 +19,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <NextUIProvider navigate={router.push}>
+      <NextUIProvider className="h-full" navigate={router.push}>
         <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
       </NextUIProvider>
     </ApolloProvider>

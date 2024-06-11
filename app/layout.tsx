@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import clsx from "clsx";
 
 import { Providers } from "./providers";
@@ -9,7 +9,6 @@ import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { fontSans, fontNoto } from "@/config/fonts";
 import { BgEffect } from "@/components/BgEffect";
-import { FloatTool } from "@/components/FloatTool";
 
 export const metadata: Metadata = {
   title: {
@@ -27,6 +26,12 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
+  width: "device-width",
+  height: "device-height",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -42,19 +47,24 @@ export default async function RootLayout({
       <head />
       <body
         className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
+          "h-full bg-background font-sans antialiased",
           fontSans.variable,
           locale.startsWith("zh") ? fontNoto.className : "",
         )}
       >
         <NextIntlClientProvider messages={messages}>
-          <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-            <div className="relative flex flex-col h-screen">
+          <Providers
+            themeProps={{
+              attribute: "class",
+              defaultTheme: "system",
+              enableSystem: true,
+            }}
+          >
+            <div className="relative flex flex-col h-full">
               <BgEffect />
-              <main className="container mx-auto max-w-6xl flex-grow z-10">
+              <main className="container w-full md:w-4/5 mx-auto max-w-6xl flex-grow z-10">
                 {children}
               </main>
-              <FloatTool />
             </div>
           </Providers>
         </NextIntlClientProvider>

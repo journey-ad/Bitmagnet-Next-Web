@@ -11,9 +11,8 @@ import {
 import { useTranslations } from "next-intl";
 
 import { TorrentItemProps } from "@/types";
-import { $env, formatByteSize, formatDate, setClipboard } from "@/utils";
+import { $env, formatByteSize, formatDate, setClipboard, Toast } from "@/utils";
 import FileList from "@/components/FileList";
-import { Toast } from "@/utils/Toast";
 
 export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
   const t = useTranslations();
@@ -24,7 +23,7 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
       <h1 className="text-2xl">{data.name}</h1>
 
       {/* Torrent details */}
-      <div className="flex gap-x-2 text-sm text-gray-500">
+      <div className="flex gap-x-2 text-xs md:text-sm text-gray-500">
         <span>
           {t("Search.file_size", { size: formatByteSize(data.size) })}
         </span>
@@ -36,7 +35,7 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
         </span>
       </div>
 
-      <Divider className="bg-gray-200 dark:bg-slate-800" />
+      <Divider className="bg-gray-300 dark:bg-slate-800" />
 
       {/* Magnet link and file list */}
       <div className="grid grid-cols-1 gap-5">
@@ -48,14 +47,15 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
           <Divider className="bg-gray-200 dark:bg-slate-700" />
           <CardBody>
             <div className="flex mb-1 break-all">
-              <span className="pointer-events-none select-none dark:brightness-90">
+              <span className="mr-1 pointer-events-none select-none dark:brightness-90">
                 🧲
               </span>
               <Link
                 className="text-sm"
                 href={data.magnet_uri}
-                onPress={() => {
+                onClick={(e) => {
                   if ($env.isMobile) {
+                    e.preventDefault();
                     setClipboard(data.magnet_uri);
                     Toast.success(t("Toast.copy_success"));
                   }
@@ -77,7 +77,7 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
             <FileList torrent={data as TorrentItemProps} />
           </CardBody>
           <Divider className="bg-gray-200 dark:bg-slate-700" />
-          <CardFooter className="bg-gray-100 dark:bg-slate-800">
+          <CardFooter className="bg-gray-100 dark:bg-slate-800 p-2 px-3">
             <div className="flex flex-col mr-auto gap-x-2 text-xs text-gray-500 md:flex-row md:mr-0 md:ml-2 md:text-sm">
               <span>
                 {t("Search.file_size", { size: formatByteSize(data.size) })}

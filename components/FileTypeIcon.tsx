@@ -42,18 +42,24 @@ const extensionArr = Object.fromEntries(
   Object.entries(extensionMap).map(([key, value]) => [key, value.split(",")]),
 );
 
-const getFileTypeIcon = (extension?: string) => {
-  if (!extension) return fileTypeIcons.file;
+const getFileType = (extension?: string) => {
+  if (!extension) return "file";
 
   extension = String(extension).toLowerCase();
 
   for (const [type, extensions] of Object.entries(extensionArr)) {
     if (extensions.includes(extension)) {
-      return fileTypeIcons[type as keyof typeof fileTypeIcons];
+      return type;
     }
   }
 
-  return fileTypeIcons.file; // Default icon for unknown file types
+  return "file"; // Default type for unknown file extensions
+};
+
+const getFileTypeIcon = (extension?: string) => {
+  const type = getFileType(extension);
+
+  return fileTypeIcons[type as keyof typeof fileTypeIcons];
 };
 
 export default function FileTypeIcon({
@@ -63,12 +69,17 @@ export default function FileTypeIcon({
   extension?: string;
   className?: string;
 }) {
-  const icon = getFileTypeIcon(extension);
+  const type = getFileType(extension);
+  // const icon = getFileTypeIcon(extension);
 
-  const defaultClassName = "inline-block align-middle text-[1.3em]";
+  const defaultClassName = "file-type-icon";
 
   if (!className) className = defaultClassName;
   else className = `${defaultClassName} ${className}`;
 
-  return <span className={className}>{icon}</span>;
+  return (
+    <span className={className} data-icon={type}>
+      {/* {icon} */}
+    </span>
+  );
 }
