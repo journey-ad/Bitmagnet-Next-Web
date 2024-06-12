@@ -1,82 +1,22 @@
-# Bitmagnet-Next-Web
+<div align="center">
+<img src=".readme/Logo.svg" width="100" height="100" alt="Bitmagnet-Next-Web" />
 
-<img src=".readme/Logo.svg" width="200" height="200" align="center" alt="Bitmagnet-Next-Web" />
+<h1>Bitmagnet-Next-Web</h1>
 
 更现代的磁力搜索网站程序，使用 [Next.js 14](https://nextjs.org/docs/getting-started) + [NextUI v2](https://nextui.org/) 开发，后端使用 [Bitmagnet](https://github.com/bitmagnet-io/bitmagnet)
 
-![Index](.readme/zh_Index.png)
+![Index](.readme/zh_Index.jpg)
+![Search](.readme/zh_Search.jpg)
 
-![Search](.readme/zh_Search.png)
+</div>
 
 ## 部署说明
 
 ### 容器部署
 
-最方便的部署方式是用 Docker Compose，参考下面 docker-compose.yml 配置
+最方便的部署方式是用 Docker Compose，参考 [docker-compose.yml](./docker-compose.yml) 配置
 
-```yaml
-services:
-  bitmagnet-next-web:
-    image: journey-ad/bitmagnet-next-web:latest
-    container_name: bitmagnet-next-web
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB_URL=postgres://postgres:postgres@localhost:5432/bitmagnet
-      # - POSTGRES_HOST=postgres
-      # - POSTGRES_PASSWORD=postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  bitmagnet:
-    image: ghcr.io/bitmagnet-io/bitmagnet:latest
-    container_name: bitmagnet
-    ports:
-      # API and WebUI port:
-      - "3333:3333"
-      # BitTorrent ports:
-      - "3334:3334/tcp"
-      - "3334:3334/udp"
-    restart: unless-stopped
-    environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PASSWORD=postgres
-      # - TMDB_API_KEY=your_api_key
-    command:
-      - worker
-      - run
-      - --keys=http_server
-      - --keys=queue_server
-      # disable the next line to run without DHT crawler
-      - --keys=dht_crawler
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: bitmagnet-postgres
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-    #    ports:
-    #      - "5432:5432" Expose this port if you'd like to dig around in the database
-    restart: unless-stopped
-    environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=bitmagnet
-      - PGUSER=postgres
-    shm_size: 1g
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready
-      start_period: 20s
-      interval: 10s
-```
-
-### 使用 docker run 运行
+#### 使用 docker run 运行
 
 如果不使用 Docker Compose，可以使用以下命令分别运行各个容器：
 
@@ -85,13 +25,13 @@ services:
 ```bash
 docker run -d \
   --name bitmagnet-postgres \
+  -p 5432:5432 \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=bitmagnet \
   -e PGUSER=postgres \
   -v ./data/postgres:/var/lib/postgresql/data \
   --shm-size=1g \
   postgres:16-alpine
-
 ```
 
 2. 运行 Bitmagnet 容器：
@@ -99,13 +39,14 @@ docker run -d \
 ```bash
 docker run -d \
   --name bitmagnet \
+  --link bitmagnet-postgres:postgres \
   -p 3333:3333 \
   -p 3334:3334/tcp \
   -p 3334:3334/udp \
-  -e POSTGRES_HOST=bitmagnet-postgres \
+  -e POSTGRES_HOST=postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e TMDB_API_KEY=your_api_key \
-  ghcr.io/bitmagnet-io/bitmagnet:latest
+  ghcr.io/bitmagnet-io/bitmagnet:latest \
+  worker run --keys=http_server --keys=queue_server --keys=dht_crawler
 ```
 
 3. 运行 Bitmagnet-Next-Web 容器：
@@ -113,9 +54,10 @@ docker run -d \
 ```bash
 docker run -d \
   --name bitmagnet-next-web \
+  --link bitmagnet-postgres:postgres \
   -p 3000:3000 \
-  -e POSTGRES_DB_URL=postgres://postgres:postgres@localhost:5432/bitmagnet \
-  journey-ad/bitmagnet-next-web:latest
+  -e POSTGRES_DB_URL=postgres://postgres:postgres@postgres:5432/bitmagnet \
+  journey0ad/bitmagnet-next-web:latest
 ```
 
 ### 全文搜索优化
@@ -132,7 +74,7 @@ CREATE INDEX idx_torrent_files_path_1 ON torrent_files USING gin (path gin_trgm_
 
 ## 开发指引
 
-开始开发之前，需要在项目根目录创建一个 `.env.local` 文件，并填写环境变量：
+开发之前，需要先在项目根目录创建一个 `.env.local` 文件，并填写环境变量：
 
 ```bash
 # .env.local

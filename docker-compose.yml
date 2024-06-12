@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  bitmagnet-next-web:
+    image: journey0ad/bitmagnet-next-web:latest
+    container_name: bitmagnet-next-web
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB_URL=postgres://postgres:postgres@postgres:5432/bitmagnet
+      # - POSTGRES_HOST=postgres
+      # - POSTGRES_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bitmagnet:
+    image: ghcr.io/bitmagnet-io/bitmagnet:latest
+    container_name: bitmagnet
+    ports:
+      # API and WebUI port:
+      - "3333:3333"
+      # BitTorrent ports:
+      - "3334:3334/tcp"
+      - "3334:3334/udp"
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=postgres
+      # - TMDB_API_KEY=your_api_key
+    command:
+      - worker
+      - run
+      - --keys=http_server
+      - --keys=queue_server
+      # disable the next line to run without DHT crawler
+      - --keys=dht_crawler
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: bitmagnet-postgres
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=bitmagnet
+      - PGUSER=postgres
+    shm_size: 1g
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready
+      start_period: 20s
+      interval: 10s
