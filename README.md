@@ -3,6 +3,8 @@
 
 <h1>Bitmagnet-Next-Web</h1>
 
+English / [中文文档](./README_zh-CN.md)
+
 A more modern magnet search website program, developed using [Next.js 14](https://nextjs.org/docs/getting-started) + [NextUI v2](https://nextui.org/), with the backend powered by [Bitmagnet](https://github.com/bitmagnet-io/bitmagnet).
 
 ![Index](.readme/en_Index.jpg)

@@ -3,6 +3,8 @@
 
 <h1>Bitmagnet-Next-Web</h1>
 
+[English](./README.md) / 中文文档
+
 更现代的磁力搜索网站程序，使用 [Next.js 14](https://nextjs.org/docs/getting-started) + [NextUI v2](https://nextui.org/) 开发，后端使用 [Bitmagnet](https://github.com/bitmagnet-io/bitmagnet)
 
 ![Index](.readme/zh_Index.jpg)
