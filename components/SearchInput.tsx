@@ -11,13 +11,13 @@ import clsx from "clsx";
 import { SearchIcon } from "@/components/icons";
 import { $env } from "@/utils";
 
-export default function SearchInput({
+export const SearchInput = ({
   defaultValue = "",
   isReplace = false,
 }: {
   defaultValue?: string;
   isReplace?: boolean;
-}) {
+}) => {
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(false);
@@ -167,4 +167,4 @@ export default function SearchInput({
       onValueChange={setKeyword}
     />
   );
-}
+};

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 export default function Error({
   error,
-  reset,
+  reset: _reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -26,8 +26,8 @@ export default function Error({
         {t("INTERNAL_SERVER_ERROR")}
       </h1>
 
-      <div className="flex flex-col gap-y-1 w-full mb-6 break-words text-sm md:text-lg text-gray-600">
-        <p>
+      <div className="flex flex-col gap-y-1 w-full mb-6 break-words leading-tight text-sm md:text-lg text-gray-600">
+        <p className="mb-2">
           <span className="font-medium">{t("Message")}</span>: {error.message}
         </p>
         <p>

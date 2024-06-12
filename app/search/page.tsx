@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@nextui-org/react";
 
-import SearchInput from "@/components/SearchInput";
+import { SearchInput } from "@/components/SearchInput";
 import SearchResultsList from "@/components/SearchResultsList";
 import apiFetch from "@/utils/api";
 import { MagnetIcon } from "@/components/icons";
@@ -86,8 +86,8 @@ async function fetchData({
     return resp;
   } catch (error: any) {
     console.error(error);
-    Toast.error("Error: " + error.message);
-    redirect("/");
+
+    throw error;
   }
 }
 

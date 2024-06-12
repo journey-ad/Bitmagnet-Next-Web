@@ -9,8 +9,8 @@ import { DetailContent } from "@/components/DetailContent";
 async function fetchData(hash64: string) {
   const hash = base64ToHex(hash64); // Convert base64 hash to hex
 
-  if (!hash || hash.length !== 20) {
-    // throw new Error("Invalid hash");
+  if (!hash || hash.length !== 40) {
+    console.error("Invalid hash", hash);
     notFound();
   }
 

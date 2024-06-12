@@ -4,12 +4,12 @@
   height: 1em;
   font-size: 1.3em;
   flex-shrink: 0;
+  align-self: flex-start;
   vertical-align: middle;
   margin-right: 4px;
   background-image: var(--icon);
   background-repeat: no-repeat;
   background-size: 100% 100%;
-  background-position: 0 2px;
 }
 
 :root {

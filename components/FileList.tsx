@@ -133,7 +133,7 @@ function FileItem({
       // data-size={file.type === "file" ? file.size : null}
       // data-type={file.type}
     >
-      <div className="file-item flex text-xs md:text-sm">
+      <div className="file-item flex items-center text-xs md:text-sm">
         <FileTypeIcon
           className="dark:brightness-90"
           extension={file.type === "folder" ? "folder" : file.extension}
@@ -145,15 +145,15 @@ function FileItem({
               : file.name,
           }}
           className={clsx(
-            "min-w-0 break-all",
-            file.type === "folder" ? "text-default-500" : "",
+            "min-w-0 break-all min-h-5",
+            file.type === "folder" && "text-default-500",
           )}
           title={file.path}
         />
         {file.type === "file" && file.size && (
           <Chip
             className={clsx(
-              "h-5 mx-1 mb-auto px-[2px] text-[10px] font-bold dark:invert dark:brightness-105",
+              "h-[18px] mx-1 mt-[-1px] mb-auto px-[2px] text-[10px] font-bold dark:invert dark:brightness-105",
               getSizeColor(file.size),
             )}
             size="sm"

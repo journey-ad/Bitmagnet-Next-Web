@@ -1,7 +1,13 @@
 import { Pool } from "pg";
 
+const connectionString = process.env.BITMAGNET_DB_URL;
+
+if (!connectionString) {
+  throw new Error("Missing environment variable `BITMAGNET_DB_URL`");
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: false,
 });
 

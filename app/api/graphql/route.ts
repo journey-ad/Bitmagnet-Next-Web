@@ -55,13 +55,23 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     search: async (_: any, { queryInput }: any) => {
+      // Return an empty result if no keywords are provided
+      if (queryInput.keyword.trim().length < 2) {
+        return {
+          torrents: [],
+          total_count: 0,
+          has_more: false,
+        };
+      }
+
       // Determine the order by clause based on the sortType
       const orderByMap: { [key: string]: string } = {
         size: "torrents.size DESC",
         count: "COALESCE(torrents.files_count, 0) DESC",
         date: "torrents.created_at ASC",
       };
-      const orderBy = orderByMap[queryInput.sortType] || "torrents.created_at DESC";
+      const orderBy =
+        orderByMap[queryInput.sortType] || "torrents.created_at DESC";
 
       // Determine the time filter based on the filterTime
       const timeFilterMap: { [key: string]: string } = {
@@ -91,24 +101,18 @@ const resolvers = {
           queryInput.keyword
             .trim()
             .split(SEARCH_KEYWORD_SPLIT_REGEX)
-            .filter((k: string) => k.trim() !== ""),
+            .filter((k: string) => k.trim().length >= 2),
         ),
       );
 
-      if (keywords.length === 0) {
-        return {
-          torrents: [],
-          total_count: 0,
-          has_more: false,
-        };
-      }
-
       // Construct the keyword filter condition
-      let keywordFilter = `torrents.name ILIKE $1 OR `;
+      let keywordFilter = `torrents.name ILIKE $1`;
 
-      keywordFilter += keywords
-        .map((_: any, i: number) => `torrents.name ILIKE $${i + 2}`)
-        .join(" AND ");
+      if (keywords.length > 0) {
+        keywordFilter += ` OR ${keywords
+          .map((_: any, i: number) => `torrents.name ILIKE $${i + 2}`)
+          .join(" AND ")}`;
+      }
 
       // SQL query to fetch filtered torrent data and files information
       const sql = `

@@ -32,11 +32,17 @@ module.exports = {
           '0%': { opacity: 0, transform: 'translateY(-10px)' },
           '100%': { opacity: 1, transform: 'translateY(0)' },
         },
+        'pop': {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+          '100%': { transform: 'scale(1)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.3s ease-in-out',
         'fade-out': 'fade-out 0.3s ease-out forwards',
         'fade-in-up': 'fade-in-up 0.3s ease-in-out',
+        'pop': 'pop 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       },
     },
   },

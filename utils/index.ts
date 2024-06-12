@@ -66,13 +66,9 @@ export function parseHighlight(text: string, highlight: string) {
   }
   const keywords = highlight
     .split(SEARCH_KEYWORD_SPLIT_REGEX)
-    .filter((k: string) => k.trim() !== "");
+    .filter((k: string) => k.trim().length >= 2);
 
   keywords.unshift(highlight);
-
-  if (keywords.length === 0) {
-    return text;
-  }
 
   // Function to escape HTML special characters to avoid interference
   function escapeHtml(unsafe: string) {

@@ -37,13 +37,13 @@ export default function SearchResultsItem({
     url: `/detail/${hexToBase64(item.hash)}`,
     files: item.single_file
       ? [
-        {
-          index: 0,
-          path: item.name,
-          size: item.size,
-          extension: item.name.split(".").pop(),
-        },
-      ]
+          {
+            index: 0,
+            path: item.name,
+            size: item.size,
+            extension: item.name.split(".").pop(),
+          },
+        ]
       : item.files,
   };
 

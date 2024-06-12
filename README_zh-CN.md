@@ -1,16 +1,18 @@
 # Bitmagnet-Next-Web
 
-A more modern magnet search website program, developed using [Next.js 14](https://nextjs.org/docs/getting-started) + [NextUI v2](https://nextui.org/), with the backend powered by [Bitmagnet](https://github.com/bitmagnet-io/bitmagnet).
+<img src=".readme/Logo.svg" width="200" height="200" align="center" alt="Bitmagnet-Next-Web" />
 
-![Index](.readme/en_Index.png)
+更现代的磁力搜索网站程序，使用 [Next.js 14](https://nextjs.org/docs/getting-started) + [NextUI v2](https://nextui.org/) 开发，后端使用 [Bitmagnet](https://github.com/bitmagnet-io/bitmagnet)
 
-![Search](.readme/en_Search.png)
+![Index](.readme/zh_Index.png)
 
-## Deployment Instructions
+![Search](.readme/zh_Search.png)
 
-### Container Deployment
+## 部署说明
 
-The most convenient way to deploy is using Docker Compose. Refer to the docker-compose.yml configuration below:
+### 容器部署
+
+最方便的部署方式是用 Docker Compose，参考下面 docker-compose.yml 配置
 
 ```yaml
 services:
@@ -74,11 +76,11 @@ services:
       interval: 10s
 ```
 
-### Running with docker run
+### 使用 docker run 运行
 
-If not using Docker Compose, you can run each container separately using the following commands:
+如果不使用 Docker Compose，可以使用以下命令分别运行各个容器：
 
-1. Run the PostgreSQL container:
+1. 运行 PostgreSQL 容器：
 
 ```bash
 docker run -d \
@@ -89,9 +91,10 @@ docker run -d \
   -v ./data/postgres:/var/lib/postgresql/data \
   --shm-size=1g \
   postgres:16-alpine
+
 ```
 
-2. Run the Bitmagnet container:
+2. 运行 Bitmagnet 容器：
 
 ```bash
 docker run -d \
@@ -103,10 +106,9 @@ docker run -d \
   -e POSTGRES_PASSWORD=postgres \
   -e TMDB_API_KEY=your_api_key \
   ghcr.io/bitmagnet-io/bitmagnet:latest
-
 ```
 
-3. Run the Bitmagnet-Next-Web container:
+3. 运行 Bitmagnet-Next-Web 容器：
 
 ```bash
 docker run -d \
@@ -114,44 +116,44 @@ docker run -d \
   -p 3000:3000 \
   -e POSTGRES_DB_URL=postgres://postgres:postgres@localhost:5432/bitmagnet \
   journey-ad/bitmagnet-next-web:latest
-
 ```
 
-### Full-Text Search Optimization
+### 全文搜索优化
 
-The search capability relies on the torrents.name and torrent_files.path columns. The original Bitmagnet does not index these columns, so it's recommended to create indexes to improve query efficiency:
+搜索能力依赖 `torrents.name` 和 `torrent_files.path` 两列数据，原版 Bitmagnet 未对此建立索引，建议先建立索引提升查询效率：
 
 ```sql
-create extension pg_trgm; -- Enable pg_trgm extension
+create extension pg_trgm; -- 启用 pg_trgm 扩展
 
--- Create indexes on `torrents.name` and `torrent_files.path`
+-- 对 `torrents.name` 和 `torrent_files.path` 建立索引
 CREATE INDEX idx_torrents_name_1 ON torrents USING gin (name gin_trgm_ops);
 CREATE INDEX idx_torrent_files_path_1 ON torrent_files USING gin (path gin_trgm_ops);
 ```
 
-## Development Guide
+## 开发指引
 
-Before starting development, create a `.env.local` file in the project root directory and fill in the environment variables:
+开始开发之前，需要在项目根目录创建一个 `.env.local` 文件，并填写环境变量：
 
 ```bash
-BITMAGNET_DB_URL=postgres://postgres:postgres@localhost:5432/bitmagnet
+# .env.local
+POSTGRES_DB_URL=postgres://postgres:postgres@localhost:5432/bitmagnet
 ```
 
-It's recommended to use `pnpm` as the package manager.
+推荐使用 `pnpm` 作为包管理器
 
-### Install Dependencies
+### 安装依赖
 
 ```bash
 pnpm install
 ```
 
-### Run Development Environment
+### 开发环境运行
 
 ```bash
 pnpm run dev
 ```
 
-### Build & Deploy
+### 打包 & 部署
 
 ```bash
 pnpm run build
@@ -169,3 +171,9 @@ pnpm run serve
 ## License
 
 Licensed under the [MIT license](./LICENSE).
+
+## 免责声明
+
+- 本程序为免费开源项目，旨在方便对 Bitmagnet 程序的索引数据进行检索和重新排版，以及学习 Next.js 开发，本程序不涉及采集、存储和下载功能；
+- 本程序仅用于学习和研究，不得用于商业用途，使用时请遵守相关法律法规，不得侵犯任何第三方的知识产权；
+- 本程序不提供任何支持或保证，由使用者自身滥用本程序导致的一切后果均由使用者自行承担。使用者对本程序的使用即表示接受并同意本声明。

@@ -1,7 +1,7 @@
 import { Link } from "@nextui-org/react";
 
 import { FloatTool } from "@/components/FloatTool";
-import SearchInput from "@/components/SearchInput";
+import { SearchInput } from "@/components/SearchInput";
 import { MagnetIcon } from "@/components/icons";
 import { siteConfig } from "@/config/site";
 
