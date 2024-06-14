@@ -133,7 +133,7 @@ function FileItem({
       // data-size={file.type === "file" ? file.size : null}
       // data-type={file.type}
     >
-      <div className="file-item flex items-center text-xs md:text-sm">
+      <div className="file-item flex items-center text-xs md:text-sm md:leading-[1rem]">
         <FileTypeIcon
           className="dark:brightness-90"
           extension={file.type === "folder" ? "folder" : file.extension}

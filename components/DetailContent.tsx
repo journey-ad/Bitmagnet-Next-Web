@@ -20,7 +20,7 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
   return (
     <>
       {/* Torrent name */}
-      <h1 className="text-2xl">{data.name}</h1>
+      <h1 className="text-2xl break-words">{data.name}</h1>
 
       {/* Torrent details */}
       <div className="flex gap-x-2 text-xs md:text-sm text-gray-500">

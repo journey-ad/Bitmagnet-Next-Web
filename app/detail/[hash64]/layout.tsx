@@ -12,7 +12,7 @@ export default function DetailLayout({
 }) {
   return (
     <section className="flex flex-col justify-center gap-4 px-3 py-3 md:py-8">
-      <div className="flex items-center max-w-xl mb-4">
+      <div className="flex items-center mb-4">
         <Link
           className="mb-[-2px] mr-2 md:mr-4 leading-none text-[50px] md:text-[60px]"
           href="/"

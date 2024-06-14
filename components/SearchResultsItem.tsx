@@ -35,16 +35,7 @@ export default function SearchResultsItem({
     ...item,
     name: item.name,
     url: `/detail/${hexToBase64(item.hash)}`,
-    files: item.single_file
-      ? [
-          {
-            index: 0,
-            path: item.name,
-            size: item.size,
-            extension: item.name.split(".").pop(),
-          },
-        ]
-      : item.files,
+    files: item.files,
   };
 
   const t = useTranslations();

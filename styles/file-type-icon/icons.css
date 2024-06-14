@@ -1,7 +1,7 @@
 .file-type-icon {
   display: inline-block;
   width: 1em;
-  height: 1em;
+  height: 18px;
   font-size: 1.3em;
   flex-shrink: 0;
   align-self: flex-start;
@@ -9,7 +9,8 @@
   margin-right: 4px;
   background-image: var(--icon);
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-size: 100% auto;
+  background-position: center;
 }
 
 :root {

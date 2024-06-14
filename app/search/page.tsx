@@ -139,7 +139,7 @@ export default async function SearchPage({
   const cost_time = Date.now() - start_time;
 
   return (
-    <div className="w-full max-w-3xl">
+    <div className="w-full md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
       <div className="flex items-center mb-7">
         <Link
           className="mb-[-2px] mr-2 md:mr-4 leading-none text-[50px] md:text-[60px]"
