@@ -26,7 +26,7 @@ const query = gql`
 `;
 
 // Function to handle GET requests
-export async function GET(request: Request) {
+const handler = async(request: Request) => {
   const { searchParams } = new URL(request.url);
   const hash = searchParams.get("hash");
 
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   if (!hash) {
     return NextResponse.json(
       {
-        message: "hash is required",
+        message: "`hash` is required",
         status: 400,
       },
       {
@@ -76,3 +76,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export { handler as GET, handler as POST };

@@ -14,7 +14,9 @@ async function fetchData(hash64: string) {
     notFound();
   }
 
-  const data = await apiFetch(`/api/detail?hash=${hash}`); // Fetch data from API
+  const data = await apiFetch(`/api/detail?hash=${hash}`, {
+    next: { revalidate: 60 * 60 * 24 * 7 }, // cache for 7 days
+  });
 
   return data;
 }

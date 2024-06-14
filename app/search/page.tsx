@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@nextui-org/react";
 
@@ -8,7 +7,6 @@ import SearchResultsList from "@/components/SearchResultsList";
 import apiFetch from "@/utils/api";
 import { MagnetIcon } from "@/components/icons";
 import { siteConfig } from "@/config/site";
-import { Toast } from "@/utils";
 import {
   DEFAULT_SORT_TYPE,
   SEARCH_PAGE_SIZE,
@@ -70,7 +68,9 @@ async function fetchData({
   }
 
   try {
-    const resp = await apiFetch(`/api/search?${params.toString()}`);
+    const resp = await apiFetch(`/api/search?${params.toString()}`, {
+      next: { revalidate: 60 * 60 * 6 }, // cache for 6 hours
+    });
 
     if (isNewSearch) {
       totalCount = resp.data.total_count;

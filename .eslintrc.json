@@ -88,5 +88,11 @@
         "next": ["const", "let", "var"]
       }
     ]
-  }
+  },
+  "prettier/prettier": [
+    "warn",
+    {
+      "endOfLine": "auto"
+    }
+  ]
 }

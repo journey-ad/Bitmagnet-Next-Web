@@ -57,7 +57,7 @@ const schema = z.object({
   withTotalCount: z.coerce.boolean().default(false),
 });
 
-export async function GET(request: Request) {
+const handler = async (request: Request) => {
   // Extract search parameters from the request URL
   const { searchParams } = new URL(request.url);
   const params = Object.fromEntries(searchParams.entries());
@@ -92,12 +92,13 @@ export async function GET(request: Request) {
       variables: {
         queryInput: safeParams,
       },
+      fetchPolicy: "no-cache",
     });
 
     return NextResponse.json(
       {
         data: data.search,
-        message: "Success",
+        message: "success",
         status: 200,
       },
       {
@@ -119,3 +120,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export { handler as GET, handler as POST };
