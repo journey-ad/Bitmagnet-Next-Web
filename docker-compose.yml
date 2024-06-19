@@ -8,6 +8,7 @@ services:
       - "3000:3000"
     restart: unless-stopped
     environment:
+      - NEXT_PUBLIC_HOST=bitmagnet-next-web
       - POSTGRES_DB_URL=postgres://postgres:postgres@postgres:5432/bitmagnet
       # - POSTGRES_HOST=postgres
       # - POSTGRES_PASSWORD=postgres
