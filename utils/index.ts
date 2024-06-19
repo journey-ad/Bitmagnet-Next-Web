@@ -141,5 +141,5 @@ export const $env = {
   },
 };
 
-export { Cookie }
+export { Cookie };
 export { Toast } from "./Toast";

@@ -26,7 +26,7 @@ const query = gql`
 `;
 
 // Function to handle GET requests
-const handler = async(request: Request) => {
+const handler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const hash = searchParams.get("hash");
 
@@ -75,6 +75,6 @@ const handler = async(request: Request) => {
       },
     );
   }
-}
+};
 
 export { handler as GET, handler as POST };
