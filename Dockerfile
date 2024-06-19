@@ -7,7 +7,8 @@ WORKDIR /app
 # Install dependencies
 FROM base AS deps
 COPY package.json ./
-RUN npm config set registry 'https://registry.npmmirror.com/' && npm install
+RUN npm config set registry 'https://registry.npmmirror.com/'
+RUN npm install
 
 # Build the application
 FROM base AS builder
@@ -22,13 +23,14 @@ FROM node:18-alpine AS runner
 WORKDIR /app
 
 # Copy the necessary files from the builder stage
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/.next/server ./.next/server
 
 # Expose the application port
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
