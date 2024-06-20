@@ -128,7 +128,7 @@ const resolvers = {
           FROM 
             torrents
           WHERE 
-            ${keywordFilter}   -- 关键词过滤条件
+            (${keywordFilter})   -- 关键词过滤条件
             ${timeFilter}      -- 时间范围过滤条件
             ${sizeFilter}      -- 大小范围过滤条件
           ${orderBy ? `ORDER BY ${orderBy}` : ""} -- 排序方式
@@ -180,9 +180,10 @@ const resolvers = {
           FROM (
             SELECT 1
             FROM torrents
-            WHERE ${keywordFilter}
-            ${timeFilter}
-            ${sizeFilter}
+            WHERE
+              (${keywordFilter})
+              ${timeFilter}
+              ${sizeFilter}
           ) AS limited_total;
         `;
         const countParams = [
