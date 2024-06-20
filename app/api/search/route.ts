@@ -17,6 +17,7 @@ import {
 const SEARCH = gql`
   query Search($queryInput: SearchQueryInput!) {
     search(queryInput: $queryInput) {
+      keywords
       torrents {
         hash
         name
@@ -54,7 +55,10 @@ const schema = z.object({
   sortType: z.enum(SEARCH_PARAMS.sortType).default(DEFAULT_SORT_TYPE),
   filterTime: z.enum(SEARCH_PARAMS.filterTime).default(DEFAULT_FILTER_TIME),
   filterSize: z.enum(SEARCH_PARAMS.filterSize).default(DEFAULT_FILTER_SIZE),
-  withTotalCount: z.coerce.boolean().default(false),
+  withTotalCount: z
+    .enum(["0", "1"])
+    .transform((value) => value === "1")
+    .default("1"),
 });
 
 const handler = async (request: Request) => {

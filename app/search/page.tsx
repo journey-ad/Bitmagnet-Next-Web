@@ -63,8 +63,9 @@ async function fetchData({
     filterSize !== cachedSearchOption.filterSize;
 
   if (isNewSearch) {
-    params.set("withTotalCount", "true");
     cachedSearchOption = null; // Reset cachedSearchOption for new search
+  } else {
+    params.set("withTotalCount", "0");
   }
 
   try {
