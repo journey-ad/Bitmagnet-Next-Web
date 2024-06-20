@@ -8,6 +8,11 @@ console.log("[Next] build mode:", mode);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: mode,
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@node-rs/jieba'
+    ]
+  }
 }
 
 module.exports = withNextIntl(nextConfig);

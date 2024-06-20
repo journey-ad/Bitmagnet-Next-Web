@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 
 import { formatTorrent } from "./service";
 
+import { jiebaExtract } from "@/lib/jieba";
 import { query } from "@/lib/pgdb";
 import { SEARCH_KEYWORD_SPLIT_REGEX } from "@/config/constant";
 
@@ -40,6 +41,7 @@ const typeDefs = gql`
   }
 
   type SearchResult {
+    keywords: [String!]!
     torrents: [Torrent!]!
     total_count: Int!
     has_more: Boolean!
@@ -95,21 +97,35 @@ const resolvers = {
       };
       const sizeFilter = sizeFilterMap[queryInput.filterSize] || "";
 
-      // Extract and process keywords
-      const keywords = Array.from(
-        new Set(
-          queryInput.keyword
-            .trim()
-            .split(SEARCH_KEYWORD_SPLIT_REGEX)
-            .filter((k: string) => k.trim().length >= 2),
-        ),
+      // Extract keywords using regex tokenizer
+      let keywords = queryInput.keyword
+        .trim()
+        .split(SEARCH_KEYWORD_SPLIT_REGEX);
+
+      // Use jieba to extract additional keywords if input is a full sentence
+      if (keywords.length === 1 && queryInput.keyword.length >= 4) {
+        keywords.push(...jiebaExtract(queryInput.keyword));
+      }
+
+      // Ensure full keyword is the first item
+      if (!keywords.includes(queryInput.keyword)) {
+        keywords.unshift(queryInput.keyword);
+      }
+
+      // Remove duplicates and filter out keywords shorter than 2 characters to avoid slow SQL queries
+      keywords = Array.from(
+        new Set(keywords.filter((k: string) => k.trim().length >= 2)),
       );
 
       // Construct the keyword filter condition
+      // The full keyword (first item) is handled separately
       let keywordFilter = `torrents.name ILIKE $1`;
 
-      if (keywords.length > 0) {
+      // Combine remaining keywords with `AND`, then with full keyword using `OR`
+      // Ensures the full keyword matches first, followed by individual tokens
+      if (keywords.length > 1) {
         keywordFilter += ` OR ${keywords
+          .slice(1)
           .map((_: any, i: number) => `torrents.name ILIKE $${i + 2}`)
           .join(" AND ")}`;
       }
@@ -132,8 +148,8 @@ const resolvers = {
             ${timeFilter}      -- 时间范围过滤条件
             ${sizeFilter}      -- 大小范围过滤条件
           ${orderBy ? `ORDER BY ${orderBy}` : ""} -- 排序方式
-          LIMIT $${keywords.length + 2}    -- 返回数量
-          OFFSET $${keywords.length + 3}   -- 分页偏移
+          LIMIT $${keywords.length + 1}    -- 返回数量
+          OFFSET $${keywords.length + 2}   -- 分页偏移
         )
         -- 从过滤后的数据中查询文件信息
         SELECT 
@@ -163,13 +179,12 @@ const resolvers = {
       `;
 
       const params = [
-        `%${queryInput.keyword}%`,
         ...keywords.map((k: any) => `%${k}%`),
         queryInput.limit,
         queryInput.offset,
       ];
 
-      // console.log(sql, params);
+      // console.log(sql, params, keywords);
 
       const queryArr = [query(sql, params)];
 
@@ -186,10 +201,7 @@ const resolvers = {
               ${sizeFilter}
           ) AS limited_total;
         `;
-        const countParams = [
-          `%${queryInput.keyword}%`,
-          ...keywords.map((k: any) => `%${k}%`),
-        ];
+        const countParams = [...keywords.map((k: any) => `%${k}%`)];
 
         queryArr.push(query(countSql, countParams));
       } else {
@@ -207,7 +219,7 @@ const resolvers = {
         queryInput.withTotalCount &&
         queryInput.offset + queryInput.limit < total_count;
 
-      return { torrents, total_count, has_more };
+      return { keywords, torrents, total_count, has_more };
     },
     torrentByHash: async (_: any, { hash }: any) => {
       // SQL query to fetch torrent data and files information by hash

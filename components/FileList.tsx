@@ -120,7 +120,7 @@ function FileItem({
   highlight,
 }: {
   file: FileItem | Directory;
-  highlight?: string;
+  highlight?: string | string[];
 }) {
   return (
     <li
@@ -188,7 +188,7 @@ export default function FileList({
   max = -1,
 }: {
   torrent: TorrentItemProps;
-  highlight?: string;
+  highlight?: string | string[];
   max?: number;
 }) {
   const t = useTranslations();

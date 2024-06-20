@@ -26,10 +26,10 @@ import { SEARCH_DISPLAY_FILES_MAX } from "@/config/constant";
 
 export default function SearchResultsItem({
   item,
-  keyword,
+  keywords,
 }: {
   item: TorrentItemProps;
-  keyword: string;
+  keywords: string | string[];
 }) {
   const data = {
     ...item,
@@ -47,7 +47,7 @@ export default function SearchResultsItem({
           <Link isExternal href={data.url} title={data.name}>
             <h2
               dangerouslySetInnerHTML={{
-                __html: parseHighlight(data.name, keyword),
+                __html: parseHighlight(data.name, keywords),
               }}
               className="text-md leading-normal"
             />
@@ -57,7 +57,7 @@ export default function SearchResultsItem({
       <Divider className="bg-gray-200 dark:bg-slate-700" />
       <CardBody className="px-4">
         <FileList
-          highlight={keyword}
+          highlight={keywords}
           max={SEARCH_DISPLAY_FILES_MAX}
           torrent={data as TorrentItemProps}
         />

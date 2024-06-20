@@ -60,15 +60,16 @@ export function getSizeColor(size: number | string) {
   }
 }
 
-export function parseHighlight(text: string, highlight: string) {
+export function parseHighlight(text: string, highlight: string | string[]) {
   if (!text || !highlight) {
     return text;
   }
-  const keywords = highlight
-    .split(SEARCH_KEYWORD_SPLIT_REGEX)
-    .filter((k: string) => k.trim().length >= 2);
-
-  keywords.unshift(highlight);
+  const keywords =
+    typeof highlight === "string"
+      ? [highlight, ...highlight.split(SEARCH_KEYWORD_SPLIT_REGEX)].filter(
+          (k: string) => k.trim().length >= 2,
+        )
+      : highlight;
 
   // Function to escape HTML special characters to avoid interference
   function escapeHtml(unsafe: string) {

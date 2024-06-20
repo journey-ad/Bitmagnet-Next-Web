@@ -12,11 +12,13 @@ import { SEARCH_PARAMS, SEARCH_PAGE_MAX } from "@/config/constant";
 
 export default function SearchResultsList({
   resultList,
+  keywords,
   cost_time = 0,
   total_count = 0,
   searchOption,
 }: {
   resultList: SearchResultsListProps["torrents"];
+  keywords: string[];
   cost_time: number;
   total_count: number;
   searchOption: {
@@ -127,7 +129,7 @@ export default function SearchResultsList({
 
       {resultList.map((item) => (
         <div key={item.hash} className="mb-6">
-          <SearchResultsItem item={item} keyword={searchOption.keyword} />
+          <SearchResultsItem item={item} keywords={keywords} />
         </div>
       ))}
 
