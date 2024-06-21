@@ -153,8 +153,8 @@ export default async function SearchPage({
       </div>
       <SearchResultsList
         cost_time={cost_time}
-        resultList={data.torrents}
         keywords={data.keywords}
+        resultList={data.torrents}
         searchOption={searchOption}
         total_count={totalCount}
       />
