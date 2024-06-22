@@ -14,7 +14,7 @@ export const SEARCH_PARAMS = {
 
 // Tokenizer for search keywords
 export const SEARCH_KEYWORD_SPLIT_REGEX =
-  /[.,!?;:—()\[\]{}<>@#%^&*~`"'|\-，。！？；：“”‘’“”「」『』《》、【】……（）·　\s]/g;
+  /[.,!?;—()\[\]{}<>@#%^&*~`"'|\-，。！？；“”‘’“”「」『』《》、【】……（）·　\s]/g;
 
 // Using for Search page
 export const SEARCH_DISPLAY_FILES_MAX = 10;

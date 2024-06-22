@@ -1,18 +1,15 @@
-import { load, cut, extract } from "@node-rs/jieba";
+import { tag } from "@node-rs/jieba";
 
-let jiebaLoaded = false;
-
-export function loadJieba() {
-  if (!jiebaLoaded) {
-    load();
-    jiebaLoaded = true;
-  }
-}
+const requiredTags = [
+  ["n", "nr", "ns", "nt", "nz"], // noun
+  "vn", // gerund
+  "x", // other
+].flat();
 
 export function jiebaCut(text: string) {
-  return cut(text);
-}
-
-export function jiebaExtract(text: string) {
-  return extract(text, 3).map((_) => _.keyword);
+  // return cut(text, true);
+  return tag(text, true).map((_) => ({
+    keyword: _.word,
+    required: requiredTags.includes(_.tag),
+  }));
 }

@@ -1,5 +1,5 @@
 import { query } from "@/lib/pgdb";
-import { jiebaExtract } from "@/lib/jieba";
+import { jiebaCut } from "@/lib/jieba";
 import { SEARCH_KEYWORD_SPLIT_REGEX } from "@/config/constant";
 
 type Torrent = {
@@ -24,6 +24,17 @@ const REGEX_PADDING_FILE = /^(_____padding_file_|\.pad\/\d+&)/; // Regular expre
 export function formatTorrent(row: Torrent) {
   const hash = row.info_hash.toString("hex"); // Convert info_hash from Buffer to hex string
 
+  const generateSingleFiles = (row: Torrent) => {
+    return [
+      {
+        index: 0,
+        path: row.name,
+        size: row.size,
+        extension: row.name.split(".").pop() || "",
+      },
+    ];
+  };
+
   return {
     hash: hash,
     name: row.name,
@@ -31,17 +42,7 @@ export function formatTorrent(row: Torrent) {
     magnet_uri: `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(row.name)}&xl=${row.size}`, // Create magnet URI
     single_file: row.files_count <= 1,
     files_count: row.files_count || 1,
-    files: (row.files_count > 0
-      ? row.files
-      : [
-          {
-            index: 0,
-            path: row.name,
-            size: row.size,
-            extension: row.name.split(".").pop() || "",
-          },
-        ]
-    )
+    files: (row.files_count > 0 ? row.files : generateSingleFiles(row))
       .map((file) => ({
         index: file.index,
         path: file.path,
@@ -109,38 +110,60 @@ const buildSizeFilter = (filterSize: keyof typeof sizeFilterMap) => {
 };
 
 const QUOTED_KEYWORD_REGEX = /"([^"]+)"/g;
-const extractKeywords = (keyword: string): string[] => {
+const extractKeywords = (
+  keyword: string,
+): { keyword: string; required: boolean }[] => {
   let keywords = [];
   let match;
 
   // Extract exact keywords using quotation marks
   while ((match = QUOTED_KEYWORD_REGEX.exec(keyword)) !== null) {
-    keywords.push(match[1]);
+    keywords.push({ keyword: match[1], required: true });
   }
 
   const remainingKeywords = keyword.replace(QUOTED_KEYWORD_REGEX, "");
 
   // Extract remaining keywords using regex tokenizer
-  keywords.push(...remainingKeywords.trim().split(SEARCH_KEYWORD_SPLIT_REGEX));
+  keywords.push(
+    ...remainingKeywords
+      .trim()
+      .split(SEARCH_KEYWORD_SPLIT_REGEX)
+      .map((k) => ({ keyword: k, required: false })),
+  );
 
   // Use jieba to words segment if input is a full sentence
   if (keywords.length === 1 && keyword.length >= 4) {
-    keywords.push(...jiebaExtract(keyword));
+    keywords.push(...jiebaCut(keyword));
+  }
+
+  // Remove duplicates and filter out keywords shorter than 2 characters to avoid slow SQL queries
+  keywords = Array.from(
+    new Map(keywords.map((k) => [k.keyword, k])).values(),
+  ).filter(({ keyword }) => keyword.trim().length >= 2);
+
+  // Ensure at least 1/3 keyword is required when there is no required keyword
+  if (keywords.length && !keywords.some(({ required }) => required)) {
+    [...keywords]
+      .sort((a, b) => b.keyword.length - a.keyword.length)
+      .slice(0, Math.ceil(keywords.length / 3))
+      .forEach((k) => (k.required = true));
   }
 
   const fullKeyword = keyword.replace(/"/g, "");
 
   // Ensure full keyword is the first item
-  if (!keywords.includes(fullKeyword)) {
-    keywords.unshift(fullKeyword);
+  if (!keywords.some((k) => k.keyword === fullKeyword)) {
+    keywords.unshift({ keyword: fullKeyword, required: false });
   }
 
-  // Remove duplicates and filter out keywords shorter than 2 characters to avoid slow SQL queries
-  return Array.from(new Set(keywords.filter((k) => k.trim().length >= 2)));
+  return keywords;
 };
 
 export async function search(_: any, { queryInput }: any) {
   try {
+    console.info("-".repeat(50));
+    console.info("search params", queryInput);
+
     // Return an empty result if no keywords are provided
     if (queryInput.keyword.trim().length < 2) {
       return {
@@ -158,90 +181,103 @@ export async function search(_: any, { queryInput }: any) {
     const keywords = extractKeywords(queryInput.keyword);
 
     // Construct the keyword filter condition
-    // The full keyword (first item) is handled separately
-    let keywordFilter = `torrents.name ILIKE $1`;
+    const requiredKeywords: string[] = [];
+    const optionalKeywords: string[] = [];
 
-    // Combine remaining keywords with `AND`, then with full keyword using `OR`
-    // Ensures the full keyword matches first, followed by individual tokens
-    if (keywords.length > 1) {
-      keywordFilter += ` OR ${keywords
-        .slice(1)
-        .map((_: any, i: number) => `torrents.name ILIKE $${i + 2}`)
-        .join(" AND ")}`;
+    keywords.forEach(({ required }, i) => {
+      const condition = `torrents.name ILIKE $${i + 1}`;
+
+      if (required) {
+        requiredKeywords.push(condition);
+      } else {
+        optionalKeywords.push(condition);
+      }
+    });
+
+    const fullConditions = [...requiredKeywords];
+
+    if (optionalKeywords.length > 0) {
+      optionalKeywords.push("TRUE");
+      fullConditions.push(`(${optionalKeywords.join(" OR ")})`);
     }
+
+    const keywordFilter = fullConditions.join(" AND ");
+
+    const keywordsParams = keywords.map(({ keyword }) => `%${keyword}%`);
+    const keywordsPlain = keywords.map(({ keyword }) => keyword);
 
     // SQL query to fetch filtered torrent data and files information
     const sql = `
-        -- 先查到符合过滤条件的数据
-        WITH filtered AS (
-          SELECT 
-            torrents.info_hash,    -- 种子哈希
-            torrents.name,         -- 种子名称
-            torrents.size,         -- 种子大小
-            torrents.created_at,   -- 创建时间戳
-            torrents.updated_at,   -- 更新时间戳
-            torrents.files_count   -- 种子文件数
-          FROM 
-            torrents
-          WHERE 
-            (${keywordFilter})   -- 关键词过滤条件
-            ${timeFilter}      -- 时间范围过滤条件
-            ${sizeFilter}      -- 大小范围过滤条件
-          ${orderBy ? `ORDER BY ${orderBy}` : ""} -- 排序方式
-          LIMIT $${keywords.length + 1}    -- 返回数量
-          OFFSET $${keywords.length + 2}   -- 分页偏移
-        )
-        -- 从过滤后的数据中查询文件信息
-        SELECT 
-          filtered.info_hash,    -- 种子哈希
-          filtered.name,         -- 种子名称
-          filtered.size,         -- 种子大小
-          filtered.created_at,   -- 创建时间戳
-          filtered.updated_at,   -- 更新时间戳
-          filtered.files_count,  -- 种子文件数
-          -- 检查 files_count, 是否有文件数量
-          CASE
-            WHEN filtered.files_count IS NOT NULL THEN (
-              -- 如果有数量, 根据 info_hash 查询文件信息到 'files' 列, 聚合成JSON
-              SELECT json_agg(json_build_object(
-                'index', torrent_files.index,         -- 文件在种子中的索引
-                'path', torrent_files.path,           -- 文件在种子中的路径
-                'size', torrent_files.size,           -- 文件大小
-                'extension', torrent_files.extension  -- 文件扩展名
-              ))
-              FROM torrent_files
-              WHERE torrent_files.info_hash = filtered.info_hash   -- 根据 info_hash 匹配文件
-            )
-            ELSE NULL   -- 如果 files_count 为空, 则设置为NULL
-          END AS files  -- 结果别名设为 'files'
-        FROM 
-          filtered;   -- 从过滤后的数据中查询
-        `;
+-- 先查到符合过滤条件的数据
+WITH filtered AS (
+  SELECT 
+    torrents.info_hash,    -- 种子哈希
+    torrents.name,         -- 种子名称
+    torrents.size,         -- 种子大小
+    torrents.created_at,   -- 创建时间戳
+    torrents.updated_at,   -- 更新时间戳
+    torrents.files_count   -- 种子文件数
+  FROM 
+    torrents
+  WHERE 
+    (${keywordFilter})   -- 关键词过滤条件
+    ${timeFilter}   -- 时间范围过滤条件
+    ${sizeFilter}   -- 大小范围过滤条件
+  ${orderBy ? `ORDER BY ${orderBy}` : ""} -- 排序方式
+  LIMIT $${keywords.length + 1}    -- 返回数量
+  OFFSET $${keywords.length + 2}   -- 分页偏移
+)
+-- 从过滤后的数据中查询文件信息
+SELECT 
+  filtered.info_hash,    -- 种子哈希
+  filtered.name,         -- 种子名称
+  filtered.size,         -- 种子大小
+  filtered.created_at,   -- 创建时间戳
+  filtered.updated_at,   -- 更新时间戳
+  filtered.files_count,  -- 种子文件数
+  -- 检查 files_count, 是否有文件数量
+  CASE
+    WHEN filtered.files_count IS NOT NULL THEN (
+      -- 如果有数量, 根据 info_hash 查询文件信息到 'files' 列, 聚合成JSON
+      SELECT json_agg(json_build_object(
+        'index', torrent_files.index,         -- 文件在种子中的索引
+        'path', torrent_files.path,           -- 文件在种子中的路径
+        'size', torrent_files.size,           -- 文件大小
+        'extension', torrent_files.extension  -- 文件扩展名
+      ))
+      FROM torrent_files
+      WHERE torrent_files.info_hash = filtered.info_hash   -- 根据 info_hash 匹配文件
+    )
+    ELSE NULL   -- 如果 files_count 为空, 则设置为NULL
+  END AS files  -- 结果别名设为 'files'
+FROM 
+  filtered;   -- 从过滤后的数据中查询
+`;
 
-    const params = [
-      ...keywords.map((k: any) => `%${k}%`),
-      queryInput.limit,
-      queryInput.offset,
-    ];
+    const params = [...keywordsParams, queryInput.limit, queryInput.offset];
 
-    // console.log(sql, params, keywords);
+    console.debug("SQL:", sql, params);
+    console.debug(
+      "keywords:",
+      keywords.map((item, i) => ({ _: `$${i + 1}`, ...item })),
+    );
 
     const queryArr = [query(sql, params)];
 
     // SQL query to get the total count if requested
     if (queryInput.withTotalCount) {
       const countSql = `
-          SELECT COUNT(*) AS total
-          FROM (
-            SELECT 1
-            FROM torrents
-            WHERE
-              (${keywordFilter})
-              ${timeFilter}
-              ${sizeFilter}
-          ) AS limited_total;
+SELECT COUNT(*) AS total
+FROM (
+  SELECT 1
+  FROM torrents
+  WHERE
+    (${keywordFilter})
+    ${timeFilter}
+    ${sizeFilter}
+) AS limited_total;
         `;
-      const countParams = [...keywords.map((k: any) => `%${k}%`)];
+      const countParams = [...keywordsParams];
 
       queryArr.push(query(countSql, countParams));
     } else {
@@ -259,7 +295,7 @@ export async function search(_: any, { queryInput }: any) {
       queryInput.withTotalCount &&
       queryInput.offset + queryInput.limit < total_count;
 
-    return { keywords, torrents, total_count, has_more };
+    return { keywords: keywordsPlain, torrents, total_count, has_more };
   } catch (error) {
     console.error("Error in search resolver:", error);
     throw new Error("Failed to execute search query");
@@ -270,23 +306,23 @@ export async function torrentByHash(_: any, { hash }: { hash: string }) {
   try {
     // SQL query to fetch torrent data and files information by hash
     const sql = `
-    SELECT
-      t.info_hash,
-      t.name,
-      t.size,
-      t.created_at,
-      t.updated_at,
-      t.files_count,
-      json_agg(json_build_object(
-        'index', f.index,
-        'path', f.path,
-        'size', f.size,
-        'extension', f.extension
-      )) AS files
-    FROM torrents t
-    LEFT JOIN torrent_files f ON t.info_hash = f.info_hash
-    WHERE t.info_hash = decode($1, 'hex')
-    GROUP BY t.info_hash, t.name, t.size, t.created_at, t.updated_at, t.files_count;
+SELECT
+  t.info_hash,
+  t.name,
+  t.size,
+  t.created_at,
+  t.updated_at,
+  t.files_count,
+  json_agg(json_build_object(
+    'index', f.index,
+    'path', f.path,
+    'size', f.size,
+    'extension', f.extension
+  )) AS files
+FROM torrents t
+LEFT JOIN torrent_files f ON t.info_hash = f.info_hash
+WHERE t.info_hash = decode($1, 'hex')
+GROUP BY t.info_hash, t.name, t.size, t.created_at, t.updated_at, t.files_count;
     `;
 
     const params = [hash];
@@ -308,34 +344,34 @@ export async function torrentByHash(_: any, { hash }: { hash: string }) {
 export async function statsInfo() {
   try {
     const sql = `
-    WITH db_size AS (
-      SELECT pg_database_size('bitmagnet') AS size
-    ),
-    torrent_count AS (
-      SELECT COUNT(*) AS total_count FROM torrents
-    ),
-    latest_torrent AS (
-      SELECT *
-        FROM torrents
-        ORDER BY created_at DESC
-        LIMIT 1
-    )
-    SELECT 
-      db_size.size,
-      latest_torrent.created_at as updated_at,
-      torrent_count.total_count,
-      encode(latest_torrent.info_hash, 'hex') AS latest_torrent_hash,
-      json_build_object(
-        'hash', encode(latest_torrent.info_hash, 'hex'),
-        'name', latest_torrent.name,
-        'size', latest_torrent.size,
-        'created_at', latest_torrent.created_at,
-        'updated_at', latest_torrent.updated_at
-      ) AS latest_torrent
-    FROM 
-      db_size,
-      torrent_count,
-      latest_torrent;
+WITH db_size AS (
+  SELECT pg_database_size('bitmagnet') AS size
+),
+torrent_count AS (
+  SELECT COUNT(*) AS total_count FROM torrents
+),
+latest_torrent AS (
+  SELECT *
+    FROM torrents
+    ORDER BY created_at DESC
+    LIMIT 1
+)
+SELECT 
+  db_size.size,
+  latest_torrent.created_at as updated_at,
+  torrent_count.total_count,
+  encode(latest_torrent.info_hash, 'hex') AS latest_torrent_hash,
+  json_build_object(
+    'hash', encode(latest_torrent.info_hash, 'hex'),
+    'name', latest_torrent.name,
+    'size', latest_torrent.size,
+    'created_at', latest_torrent.created_at,
+    'updated_at', latest_torrent.updated_at
+  ) AS latest_torrent
+FROM 
+  db_size,
+  torrent_count,
+  latest_torrent;
     `;
 
     const { rows } = await query(sql, []);
