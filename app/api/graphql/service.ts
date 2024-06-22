@@ -266,7 +266,7 @@ export async function search(_: any, { queryInput }: any) {
   }
 }
 
-export async function torrentByHash(hash: string) {
+export async function torrentByHash(_: any, { hash }: { hash: string }) {
   try {
     // SQL query to fetch torrent data and files information by hash
     const sql = `
@@ -356,7 +356,7 @@ export async function statsInfo() {
         updated_at: Math.floor(
           new Date(data.latest_torrent.updated_at).getTime() / 1000,
         ),
-      }
+      },
     };
   } catch (error) {
     console.error("Error in statsInfo resolver:", error);
