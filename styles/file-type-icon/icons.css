@@ -24,6 +24,7 @@
   --icon-archive: url(./package.svg);
   --icon-disk: url(./optical-disk.svg);
   --icon-executable: url(./gear.svg);
+  --icon-subtitle: url(./scroll.svg);
 }
 
 .file-type-icon[data-icon="folder"] {
@@ -64,4 +65,8 @@
 
 .file-type-icon[data-icon="executable"] {
   --icon: var(--icon-executable);
+}
+
+.file-type-icon[data-icon="subtitle"] {
+  --icon: var(--icon-subtitle);
 }
