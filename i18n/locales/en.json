@@ -1,6 +1,15 @@
 {
   "COMMON": {
-    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
+    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+    "DATE_FORMAT_SHORT": "YYYY-MM-DD HH:mm",
+    "DATE_FORMAT_DATE": "YYYY-MM-DD",
+    "DATE_FORMAT_TIME": "HH:mm:ss"
+  },
+  "Stats": {
+    "title": "Stats",
+    "size": "Database: {size}",
+    "total_count": "Torrents: {total_count}",
+    "updated_at": "Last updated: {updated_at}"
   },
   "ERROR_MESSAGE": { 
     "INTERNAL_SERVER_ERROR": "Something went wrong!",

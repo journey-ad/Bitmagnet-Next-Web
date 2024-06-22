@@ -1,12 +1,16 @@
 {
-  "COMMON": {
-    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
+  "COMMON": {},
+  "Stats": {
+    "title": "统计信息",
+    "size": "数据库大小: {size}",
+    "total_count": "收录数量: {total_count}",
+    "updated_at": "最后更新日期: {updated_at}"
   },
   "ERROR_MESSAGE": {
     "INTERNAL_SERVER_ERROR": "发生意外错误",
     "NOT_FOUND": "资源不存在",
     "GoHome": "返回首页"
-   },
+  },
   "Metadata": {
     "search": {
       "title": "{keyword} 的搜索结果"

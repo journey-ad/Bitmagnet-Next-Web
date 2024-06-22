@@ -1,6 +1,10 @@
 {
-  "COMMON": {
-    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss"
+  "COMMON": {},
+  "Stats": {
+    "title": "統計資訊",
+    "size": "資料庫大小: {size}",
+    "total_count": "收錄數量: {total_count}",
+    "updated_at": "最後更新日期: {updated_at}"
   },
   "ERROR_MESSAGE": {
     "INTERNAL_SERVER_ERROR": "發生意外錯誤",
