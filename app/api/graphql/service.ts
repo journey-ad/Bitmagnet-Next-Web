@@ -164,13 +164,36 @@ export async function search(_: any, { queryInput }: any) {
     console.info("-".repeat(50));
     console.info("search params", queryInput);
 
+    // trim keyword
+    queryInput.keyword = queryInput.keyword.trim();
+
+    const no_result = {
+      keywords: [queryInput.keyword],
+      torrents: [],
+      total_count: 0,
+      has_more: false,
+    };
+
     // Return an empty result if no keywords are provided
-    if (queryInput.keyword.trim().length < 2) {
-      return {
-        torrents: [],
-        total_count: 0,
-        has_more: false,
-      };
+    if (queryInput.keyword.length < 2) {
+      return no_result;
+    }
+
+    const REGEX_HASH = /^[a-f0-9]{40}$/;
+
+    if (REGEX_HASH.test(queryInput.keyword)) {
+      const torrent = await torrentByHash(_, { hash: queryInput.keyword });
+
+      if (torrent) {
+        return {
+          keywords: [queryInput.keyword],
+          torrents: [torrent],
+          total_count: 1,
+          has_more: false,
+        };
+      }
+
+      return no_result;
     }
 
     // Build SQL conditions and parameters
