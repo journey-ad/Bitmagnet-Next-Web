@@ -31,3 +31,11 @@ export const DEFAULT_FILTER_SIZE = "all";
 export const UI_HIDE_PADDING_FILE = true; // https://www.bittorrent.org/beps/bep_0047.html
 
 export const UI_BACKGROUND_ANIMATION = true;
+
+export const UI_BREAKPOINTS = {
+  xs: "(max-width: 649px)",
+  sm: "(min-width: 650px)",
+  md: "(min-width: 960px)",
+  lg: "(min-width: 1280px)",
+  xl: "(min-width: 1400px)",
+};

@@ -1,8 +1,8 @@
 {
   "COMMON": {
-    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
-    "DATE_FORMAT_SHORT": "YYYY-MM-DD HH:mm",
-    "DATE_FORMAT_DATE": "YYYY-MM-DD",
+    "DATE_FORMAT": "MM/DD/YYYY HH:mm:ss",
+    "DATE_FORMAT_SHORT": "MM/DD/YYYY HH:mm",
+    "DATE_FORMAT_DATE": "MM/DD/YYYY",
     "DATE_FORMAT_TIME": "HH:mm:ss"
   },
   "Stats": {
@@ -55,13 +55,16 @@
     "cost_time": "(Processed in {cost_time}ms)",
     "more_files": "…and {count} more files",
     "magnet": "Magnet link",
-    "file_size": "File size: {size}",
-    "file_count": "File count: {count}",
-    "created_at": "Date added: {time}"
+    "file_size": "File size: ",
+    "file_count": "File count: ",
+    "created_at": "Date added: ",
+    "hash": "Hash: "
   },
   "Detail": {
+    "details": "Torrent Details",
     "magnet": "Magnet address",
-    "file_list": "File list"
+    "file_list": "File list",
+    "copy": "Copy Magnet Link"
   },
   "Toast": {
     "keyword_too_short": "Keyword needs to be at least 2 characters",

@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { Providers } from "./providers";
 
 import { siteConfig } from "@/config/site";
-import { fontSans, fontNoto } from "@/config/fonts";
+import { fontSans, fontNoto, fontMono } from "@/config/fonts";
 import { BgEffect } from "@/components/BgEffect";
 
 export const metadata: Metadata = {
@@ -49,6 +49,7 @@ export default async function RootLayout({
         className={clsx(
           "h-full bg-background font-sans antialiased",
           fontSans.variable,
+          fontMono.variable,
           locale.startsWith("zh") ? fontNoto.className : "",
         )}
       >

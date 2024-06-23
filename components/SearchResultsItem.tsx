@@ -82,13 +82,16 @@ export default function SearchResultsItem({
         </Link>
         <div className="flex flex-col mr-auto gap-x-2 text-xs text-gray-500 md:flex-row md:mr-0 md:ml-2 md:text-sm">
           <span>
-            {t("Search.file_size", { size: formatByteSize(data.size) })}
+            {t("Search.file_size")}
+            {formatByteSize(data.size)}
           </span>
-          <span>{t("Search.file_count", { count: data.files.length })}</span>
           <span>
-            {t("Search.created_at", {
-              time: formatDate(data.created_at, t("COMMON.DATE_FORMAT")),
-            })}
+            {t("Search.file_count")}
+            {data.files.length}
+          </span>
+          <span>
+            {t("Search.created_at")}
+            {formatDate(data.created_at, t("COMMON.DATE_FORMAT"))}
           </span>
         </div>
       </CardFooter>

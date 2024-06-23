@@ -1,10 +1,15 @@
 {
-  "COMMON": {},
+  "COMMON": {
+    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+    "DATE_FORMAT_SHORT": "YYYY-MM-DD HH:mm",
+    "DATE_FORMAT_DATE": "YYYY-MM-DD",
+    "DATE_FORMAT_TIME": "HH:mm:ss"
+  },
   "Stats": {
     "title": "统计信息",
     "size": "数据库大小: {size}",
     "total_count": "收录数量: {total_count}",
-    "updated_at": "最后更新日期: {updated_at}"
+    "updated_at": "最后更新: {updated_at}"
   },
   "ERROR_MESSAGE": {
     "INTERNAL_SERVER_ERROR": "发生意外错误",
@@ -48,13 +53,16 @@
     "cost_time": "(用时{cost_time}ms)",
     "more_files": "…还有 {count} 个文件",
     "magnet": "磁力链接",
-    "file_size": "文件大小: {size}",
-    "file_count": "文件数量: {count}",
-    "created_at": "收录时间: {time}"
+    "file_size": "文件大小: ",
+    "file_count": "文件数量: ",
+    "created_at": "收录时间: ",
+    "hash": "哈希值: "
   },
   "Detail": {
+    "details": "资源详情",
     "magnet": "磁链地址",
-    "file_list": "文件列表"
+    "file_list": "文件列表",
+    "copy": "复制磁链"
   },
   "Toast": {
     "keyword_too_short": "关键词需要大于两个字符",

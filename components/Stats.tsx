@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
-import { Tooltip } from "@nextui-org/react";
+import { Tooltip, Spinner } from "@nextui-org/react";
 
 import apiFetch from "@/utils/api";
 import { InfoFilledIcon } from "@/components/icons";
@@ -27,7 +27,7 @@ async function StatsCard() {
           {t("Stats.updated_at", {
             updated_at: formatDate(
               data.updated_at,
-              t("COMMON.DATE_FORMAT_DATE"),
+              t("COMMON.DATE_FORMAT_SHORT"),
             ),
           })}
         </li>
@@ -44,14 +44,14 @@ export function Stats() {
       }}
       closeDelay={0}
       content={
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Spinner size="sm" />}>
           <StatsCard />
         </Suspense>
       }
       delay={0}
       radius="sm"
     >
-      <InfoFilledIcon className="cursor-pointer text-stone-500" size={15} />
+      <InfoFilledIcon className="cursor-pointer text-gray-500" size={15} />
     </Tooltip>
   );
 }

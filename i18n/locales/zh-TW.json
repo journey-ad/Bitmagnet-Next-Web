@@ -1,10 +1,15 @@
 {
-  "COMMON": {},
+  "COMMON": {
+    "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
+    "DATE_FORMAT_SHORT": "YYYY-MM-DD HH:mm",
+    "DATE_FORMAT_DATE": "YYYY-MM-DD",
+    "DATE_FORMAT_TIME": "HH:mm:ss"
+  },
   "Stats": {
     "title": "統計資訊",
     "size": "資料庫大小: {size}",
     "total_count": "收錄數量: {total_count}",
-    "updated_at": "最後更新日期: {updated_at}"
+    "updated_at": "最後更新: {updated_at}"
   },
   "ERROR_MESSAGE": {
     "INTERNAL_SERVER_ERROR": "發生意外錯誤",
@@ -48,13 +53,16 @@
     "cost_time": "(耗時{cost_time}ms)",
     "more_files": "…還有 {count} 個文件",
     "magnet": "磁力連結",
-    "file_size": "文件大小: {size}",
-    "file_count": "文件數量: {count}",
-    "created_at": "收錄時間: {time}"
+    "file_size": "文件大小: ",
+    "file_count": "文件數量: ",
+    "created_at": "收錄時間: ",
+    "hash": "Hash: "
   },
   "Detail": {
+    "details": "資料詳情",
     "magnet": "磁鏈地址",
-    "file_list": "文件列表"
+    "file_list": "文件列表",
+    "copy": "複製磁鏈"
   },
   "Toast": {
     "keyword_too_short": "關鍵字需要大於兩個字元",

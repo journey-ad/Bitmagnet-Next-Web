@@ -273,7 +273,7 @@ export const MagnetIcon: React.FC<IconSvgProps> = (props: IconSvgProps) => (
   </svg>
 );
 
-export const copyIcon: React.FC<IconSvgProps> = (props: IconSvgProps) => (
+export const CopyIcon: React.FC<IconSvgProps> = (props: IconSvgProps) => (
   <svg
     height="1em"
     viewBox="0 0 448 512"
