@@ -124,6 +124,47 @@ export function setClipboard(text: string) {
   return true;
 }
 
+/* 
+  get resource link from "WhatsLinks"
+  https://whatslink.info/
+*/
+export interface GetLinkInfoFromWhatsLinkResponse {
+  error: string;
+  type: string; // The content type for the link
+  // The type of the content corresponding to the link, Possible values: unknown, folder, video, text, image, audio, archive, font, document
+  file_type:
+    | "unknown"
+    | "folder"
+    | "video"
+    | "text"
+    | "image"
+    | "audio"
+    | "archive"
+    | "font"
+    | "document";
+  name: string; // The name of the content corresponding to the link
+  size: number; // The total size of the content corresponding to the link
+  count: number; // The number of included files corresponding to the link
+  screenshots:
+    | null
+    | {
+        time: number; // Position of the screenshot within the content
+        screenshot: string; // The URL of the screenshot image
+      }[]; // List of content screenshots corresponding to the link
+}
+export async function getLinkInfoFromWhatsLink(
+  link: string,
+): Promise<GetLinkInfoFromWhatsLinkResponse> {
+  const res = await fetch(`https://whatslink.info/api/v1/link?url=${link}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return res.json();
+}
+
 export const $env = {
   get isServer() {
     return typeof window === "undefined";

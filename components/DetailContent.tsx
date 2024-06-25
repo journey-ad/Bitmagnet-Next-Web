@@ -8,16 +8,118 @@ import {
   Divider,
   Link,
   Button,
+  Image,
+  Modal,
+  ModalContent,
+  ModalBody,
+  useDisclosure,
 } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { TorrentItemProps } from "@/types";
-import { formatByteSize, formatDate, setClipboard, Toast } from "@/utils";
+import {
+  formatByteSize,
+  formatDate,
+  GetLinkInfoFromWhatsLinkResponse,
+  setClipboard,
+  Toast,
+} from "@/utils";
 import useBreakpoint from "@/hooks/useBreakpoints";
 import FileList from "@/components/FileList";
 import { CopyIcon } from "@/components/icons";
+import EmblaCarousel from "@/components//EmblaCarousel";
 
-export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
+const Preview = ({
+  linkInfo,
+}: {
+  linkInfo: Promise<GetLinkInfoFromWhatsLinkResponse>;
+}) => {
+  const t = useTranslations();
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [curIdx, setCurIdx] = useState(0);
+  const [linkData, setLinkData] = useState<GetLinkInfoFromWhatsLinkResponse>();
+
+  useEffect(() => {
+    linkInfo.then((data) => {
+      // console.log("linkData", data);
+      setLinkData(data);
+    });
+  }, [linkInfo]);
+
+  if (!linkData || !linkData.screenshots) return null;
+
+  const screenshots = linkData.screenshots ?? [];
+
+  return (
+    <>
+      <Card className="bg-opacity-80">
+        <CardHeader className="flex py-2 bg-gray-100 dark:bg-slate-800">
+          {t("Detail.preview")}
+        </CardHeader>
+        <Divider className="bg-gray-200 dark:bg-slate-700" />
+        <CardBody>
+          {/* <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"> */}
+          <div className="flex flex-wrap gap-3">
+            {screenshots.map((item, index) => (
+              <Image
+                key={item.screenshot}
+                isZoomed
+                className="min-h-28 max-h-48 cursor-pointer"
+                classNames={{
+                  wrapper: "!max-w-[30%] lg:!max-w-[22%] xl:!max-w-[18%]",
+                  img: "hover:scale-105 dark:brightness-50",
+                }}
+                radius="sm"
+                src={item.screenshot}
+                onClick={() => {
+                  setCurIdx(index);
+                  onOpen();
+                }}
+              />
+            ))}
+          </div>
+          <Modal
+            className="px-4 py-4 rounded-md !m-0"
+            classNames={{
+              body: "p-0",
+              wrapper: "items-center justify-center",
+              closeButton:
+                "z-20 top-[10px] right-[10px] bg-default-500 text-[24px] text-white bg-opacity-40 hover:bg-default-600 dark:hover:text-default-200",
+            }}
+            isOpen={isOpen}
+            size="2xl"
+            onOpenChange={onOpenChange}
+          >
+            <ModalContent className="w-auto">
+              {() => (
+                <ModalBody>
+                  <EmblaCarousel
+                    images={screenshots.map((item) => item.screenshot)}
+                    options={{
+                      startIndex: curIdx,
+                      duration: 22,
+                      loop: true,
+                    }}
+                  />
+                </ModalBody>
+              )}
+            </ModalContent>
+          </Modal>
+        </CardBody>
+      </Card>
+    </>
+  );
+};
+
+export const DetailContent = ({
+  data,
+  linkInfo,
+}: {
+  data: TorrentItemProps;
+  linkInfo: Promise<GetLinkInfoFromWhatsLinkResponse>;
+}) => {
   const t = useTranslations();
   const { isXs } = useBreakpoint();
 
@@ -35,7 +137,7 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
           </CardHeader>
           <Divider className="bg-gray-200 dark:bg-slate-700" />
           <CardBody>
-            <div className="flex flex-col gap-y-[2px] break-all text-xs md:text-sm text-gray-600">
+            <div className="flex flex-col gap-y-[2px] break-all text-xs md:text-sm text-gray-600 dark:text-slate-400">
               <span>
                 {t("Search.file_size")}
                 {formatByteSize(data.size)}
@@ -50,7 +152,7 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
               </span>
               <span>
                 {t("Search.hash")}
-                <span className="border rounded-sm px-1 font-mono bg-gray-100">
+                <span className="border rounded-sm px-1 font-mono bg-gray-100 dark:bg-inherit dark:border-slate-800">
                   {data.hash}
                 </span>
               </span>
@@ -91,6 +193,9 @@ export const DetailContent = ({ data }: { data: TorrentItemProps }) => {
             </div>
           </CardBody>
         </Card>
+
+        {/* Magnet content preview */}
+        <Preview linkInfo={linkInfo} />
 
         {/* File list card */}
         <Card className="bg-opacity-80">

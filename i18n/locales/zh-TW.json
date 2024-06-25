@@ -60,6 +60,7 @@
   },
   "Detail": {
     "details": "資料詳情",
+    "preview": "預覽",
     "magnet": "磁鏈地址",
     "file_list": "文件列表",
     "copy": "複製磁鏈"

@@ -60,6 +60,7 @@
   },
   "Detail": {
     "details": "资源详情",
+    "preview": "内容预览",
     "magnet": "磁链地址",
     "file_list": "文件列表",
     "copy": "复制磁链"

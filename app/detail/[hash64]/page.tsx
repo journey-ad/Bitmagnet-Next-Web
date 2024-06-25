@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { base64ToHex } from "@/utils";
+import { base64ToHex, getLinkInfoFromWhatsLink } from "@/utils";
 import apiFetch from "@/utils/api";
 import { DetailContent } from "@/components/DetailContent";
 
@@ -42,9 +42,11 @@ export default async function Detail({
 }) {
   const { data } = await fetchData(hash64);
 
+  const linkInfo = getLinkInfoFromWhatsLink(data.magnet_uri);
+
   return (
     <>
-      <DetailContent data={data} />
+      <DetailContent data={data} linkInfo={linkInfo} />
     </>
   );
 }

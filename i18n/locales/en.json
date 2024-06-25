@@ -62,6 +62,7 @@
   },
   "Detail": {
     "details": "Torrent Details",
+    "preview": "Preview",
     "magnet": "Magnet address",
     "file_list": "File list",
     "copy": "Copy Magnet Link"
