@@ -3,7 +3,8 @@
     "DATE_FORMAT": "MM/DD/YYYY HH:mm:ss",
     "DATE_FORMAT_SHORT": "MM/DD/YYYY HH:mm",
     "DATE_FORMAT_DATE": "MM/DD/YYYY",
-    "DATE_FORMAT_TIME": "HH:mm:ss"
+    "DATE_FORMAT_TIME": "HH:mm:ss",
+    "DEMO_MODE_TIPS": "This website is running in demo mode"
   },
   "Stats": {
     "title": "Statistics",

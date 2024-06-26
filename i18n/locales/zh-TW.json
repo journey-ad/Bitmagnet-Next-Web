@@ -3,7 +3,8 @@
     "DATE_FORMAT": "YYYY-MM-DD HH:mm:ss",
     "DATE_FORMAT_SHORT": "YYYY-MM-DD HH:mm",
     "DATE_FORMAT_DATE": "YYYY-MM-DD",
-    "DATE_FORMAT_TIME": "HH:mm:ss"
+    "DATE_FORMAT_TIME": "HH:mm:ss",
+    "DEMO_MODE_TIPS": "這個網站正在演示模式下運行"
   },
   "Stats": {
     "title": "統計資訊",

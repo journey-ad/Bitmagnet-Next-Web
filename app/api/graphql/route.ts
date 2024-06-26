@@ -3,7 +3,16 @@ import { startServerAndCreateNextHandler } from "@as-integrations/next/dist";
 import { gql } from "graphql-tag";
 import { NextRequest } from "next/server";
 
-import { search, torrentByHash, statsInfo } from "./service";
+// import { search, torrentByHash, statsInfo } from "./service";
+
+const isDemoMode = process.env.DEMO_MODE === "true";
+const { search, torrentByHash, statsInfo } = isDemoMode
+  ? require("./moke")
+  : require("./service");
+
+if (isDemoMode) {
+  console.log("[Bitmagnet-Next-Web] This website is running in demo mode.");
+}
 
 // Define GraphQL Schema
 const typeDefs = gql`

@@ -8,6 +8,7 @@ import { Providers } from "./providers";
 
 import { siteConfig } from "@/config/site";
 import { fontSans, fontNoto, fontMono } from "@/config/fonts";
+import { DemoMode } from "@/components/DemoMode";
 import { BgEffect } from "@/components/BgEffect";
 
 export const metadata: Metadata = {
@@ -62,6 +63,7 @@ export default async function RootLayout({
             }}
           >
             <div className="relative flex flex-col h-full">
+              <DemoMode />
               <BgEffect />
               <main className="container w-full md:w-4/5 mx-auto max-w-6xl flex-grow z-10">
                 {children}

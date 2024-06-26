@@ -1,0 +1,17 @@
+{
+  "data": {
+      "size": "26710807011",
+      "total_count": 3447565,
+      "updated_at": 1719015251,
+      "latest_torrent_hash": "3648baf850d5930510c1f172b534200ebb5496e6",
+      "latest_torrent": {
+          "hash": "3648baf850d5930510c1f172b534200ebb5496e6",
+          "name": "Ubuntu 24.04",
+          "size": "8869638144",
+          "created_at": 1719015251,
+          "updated_at": 1719015251
+      }
+  },
+  "message": "success",
+  "status": 200
+}
