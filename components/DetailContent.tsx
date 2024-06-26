@@ -60,16 +60,15 @@ const Preview = ({
         </CardHeader>
         <Divider className="bg-gray-200 dark:bg-slate-700" />
         <CardBody>
-          {/* <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"> */}
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
             {screenshots.map((item, index) => (
               <Image
                 key={item.screenshot}
                 isZoomed
-                className="min-h-28 max-h-48 cursor-pointer"
+                className="min-h-20 max-h-48 sm:min-h-28 cursor-pointer"
                 classNames={{
-                  wrapper: "!max-w-[30%] lg:!max-w-[22%] xl:!max-w-[18%]",
-                  img: "hover:scale-105 dark:brightness-50",
+                  wrapper: "w-full !max-w-full",
+                  img: "w-full hover:scale-105 dark:brightness-50",
                 }}
                 radius="sm"
                 src={item.screenshot}

@@ -28,6 +28,10 @@
   width: var(--slide-size);
   height: var(--slide-size);
   object-fit: contain;
+  cursor: grab;
+}
+.embla__slide__img:active {
+  cursor: grabbing;
 }
 .embla__controls {
   display: grid;

@@ -19,6 +19,10 @@ module.exports = {
         sans: ["var(--font-sans)"],
         mono: ["var(--font-mono)"],
       },
+      screens: {
+        'xs': '400px',
+        'sm': '540px',
+      },
       keyframes: {
         'fade-in': {
           '0%': { opacity: 0 },
