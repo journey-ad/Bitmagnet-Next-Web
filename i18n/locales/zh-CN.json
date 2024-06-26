@@ -25,8 +25,8 @@
     "placeholder": "搜你想搜...",
     "filterLabel": {
       "sortType": "排序方式",
-      "filterTime": "按时间过滤",
-      "filterSize": "按大小过滤"
+      "filterTime": "按时间筛选",
+      "filterSize": "按大小筛选"
     },
     "sortType": {
       "default": "默认排序",
@@ -50,7 +50,7 @@
       "gt5gb": "大于5GB"
     },
     "results_found": "找到约 {count} 条结果",
-    "cost_time": "(用时{cost_time}ms)",
+    "cost_time": "(用时 {cost_time}ms)",
     "more_files": "…还有 {count} 个文件",
     "magnet": "磁力链接",
     "file_size": "文件大小: ",

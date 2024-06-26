@@ -6,16 +6,16 @@
     "DATE_FORMAT_TIME": "HH:mm:ss"
   },
   "Stats": {
-    "title": "Stats",
-    "size": "Database: {size}",
-    "total_count": "Torrents: {total_count}",
+    "title": "Statistics",
+    "size": "Database size: {size}",
+    "total_count": "Total torrents: {total_count}",
     "updated_at": "Last updated: {updated_at}"
   },
   "ERROR_MESSAGE": { 
     "INTERNAL_SERVER_ERROR": "Something went wrong!",
     "NOT_FOUND": "Resource not found",
-    "Digest": "digest",
-    "Message": "message",
+    "Digest": "Digest",
+    "Message": "Message",
     "GoHome": "Go Home"
   },
   "Metadata": {
@@ -51,7 +51,7 @@
       "gt1gb-lt5gb": "1GB-5GB",
       "gt5gb": "More than 5GB"
     },
-    "results_found": "About {count} results found.",
+    "results_found": "About {count} results found",
     "cost_time": "(Processed in {cost_time}ms)",
     "more_files": "…and {count} more files",
     "magnet": "Magnet link",
@@ -61,11 +61,11 @@
     "hash": "Hash: "
   },
   "Detail": {
-    "details": "Torrent Details",
+    "details": "Torrent details",
     "preview": "Preview",
-    "magnet": "Magnet address",
+    "magnet": "Magnet link",
     "file_list": "File list",
-    "copy": "Copy Magnet Link"
+    "copy": "Copy magnet link"
   },
   "Toast": {
     "keyword_too_short": "Keyword needs to be at least 2 characters",

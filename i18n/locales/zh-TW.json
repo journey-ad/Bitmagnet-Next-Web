@@ -18,15 +18,15 @@
   },
   "Metadata": {
     "search": {
-      "title": "{keyword} 的搜索結果"
+      "title": "{keyword} 的搜尋結果"
     }
   },
   "Search": {
-    "placeholder": "搜你想搜...",
+    "placeholder": "搜尋你想要的...",
     "filterLabel": {
       "sortType": "排序方式",
-      "filterTime": "按時間過濾",
-      "filterSize": "按大小過濾"
+      "filterTime": "按時間篩選",
+      "filterSize": "按大小篩選"
     },
     "sortType": {
       "default": "默認排序",
@@ -50,7 +50,7 @@
       "gt5gb": "大於5GB"
     },
     "results_found": "找到約 {count} 條結果",
-    "cost_time": "(耗時{cost_time}ms)",
+    "cost_time": "(耗時 {cost_time}ms)",
     "more_files": "…還有 {count} 個文件",
     "magnet": "磁力連結",
     "file_size": "文件大小: ",
@@ -59,14 +59,14 @@
     "hash": "Hash: "
   },
   "Detail": {
-    "details": "資料詳情",
-    "preview": "預覽",
-    "magnet": "磁鏈地址",
-    "file_list": "文件列表",
-    "copy": "複製磁鏈"
+    "details": "詳細資訊",
+    "preview": "內容預覽",
+    "magnet": "磁力連結",
+    "file_list": "檔案清單",
+    "copy": "複製磁力連結"
   },
   "Toast": {
-    "keyword_too_short": "關鍵字需要大於兩個字元",
+    "keyword_too_short": "關鍵字需大於兩個字元",
     "copy_success": "磁力連結已複製到剪貼簿"
   }
 }
