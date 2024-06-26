@@ -33,7 +33,7 @@ COPY --from=builder /app/.next/server ./.next/server
 EXPOSE 3000
 
 # Set environment variables
-ENV HOSTNAME=0.0.0.0 PORT=3000
+ENV HOSTNAME=:: PORT=3000
 
 # Start the application
 CMD ["node", "server.js"]
