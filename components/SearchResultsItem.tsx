@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { Suspense } from "react";
 import {
   Card,
   CardHeader,
@@ -23,6 +23,7 @@ import {
 } from "@/utils";
 import FileList from "@/components/FileList";
 import { SEARCH_DISPLAY_FILES_MAX } from "@/config/constant";
+import { useHydration } from "@/hooks/useHydration";
 
 export default function SearchResultsItem({
   item,
@@ -39,6 +40,8 @@ export default function SearchResultsItem({
   };
 
   const t = useTranslations();
+
+  const hydrated = useHydration();
 
   return (
     <Card className="w-full bg-opacity-80 dark:brightness-95">
@@ -89,10 +92,12 @@ export default function SearchResultsItem({
             {t("Search.file_count")}
             {data.files.length}
           </span>
-          <span>
-            {t("Search.created_at")}
-            {formatDate(data.created_at, t("COMMON.DATE_FORMAT"))}
-          </span>
+          <Suspense key={hydrated ? "load" : "loading"}>
+            <span>
+              {t("Search.created_at")}
+              {formatDate(data.created_at, t("COMMON.DATE_FORMAT"), !hydrated)}
+            </span>
+          </Suspense>
         </div>
       </CardFooter>
     </Card>

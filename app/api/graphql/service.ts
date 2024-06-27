@@ -406,15 +406,11 @@ FROM
 
     return {
       ...data,
-      updated_at: Math.floor(new Date(data.updated_at).getTime() / 1000),
+      updated_at: Math.floor(data.updated_at / 1000),
       latest_torrent: {
         ...data.latest_torrent,
-        created_at: Math.floor(
-          new Date(data.latest_torrent.created_at).getTime() / 1000,
-        ),
-        updated_at: Math.floor(
-          new Date(data.latest_torrent.updated_at).getTime() / 1000,
-        ),
+        created_at: Math.floor(data.latest_torrent.created_at / 1000),
+        updated_at: Math.floor(data.latest_torrent.updated_at / 1000),
       },
     };
   } catch (error) {
