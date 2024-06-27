@@ -35,8 +35,16 @@ export function formatByteSize(bytes: number | string) {
   return `${convertedSize} ${units[digitGroups]}`;
 }
 
-export function formatDate(ts: number, format = "YYYY-MM-DD HH:mm:ss") {
-  return dayjs.unix(ts).format(format);
+export function formatDate(
+  ts: number,
+  format = "YYYY-MM-DD HH:mm:ss",
+  utc = false,
+) {
+  let dateStr = dayjs.unix(ts).format(format);
+
+  if (utc) dateStr += " (UTC)";
+
+  return dateStr;
 }
 
 export function getSizeColor(size: number | string) {

@@ -15,7 +15,7 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 import { TorrentItemProps } from "@/types";
 import {
@@ -29,6 +29,7 @@ import useBreakpoint from "@/hooks/useBreakpoints";
 import FileList from "@/components/FileList";
 import { CopyIcon } from "@/components/icons";
 import EmblaCarousel from "@/components//EmblaCarousel";
+import { useHydration } from "@/hooks/useHydration";
 
 const Preview = ({
   linkInfo,
@@ -122,6 +123,8 @@ export const DetailContent = ({
   const t = useTranslations();
   const { isXs } = useBreakpoint();
 
+  const hydrated = useHydration();
+
   return (
     <>
       {/* Torrent name */}
@@ -145,10 +148,16 @@ export const DetailContent = ({
                 {t("Search.file_count")}
                 {data.files.length}
               </span>
-              <span>
-                {t("Search.created_at")}
-                {formatDate(data.created_at, t("COMMON.DATE_FORMAT"))}
-              </span>
+              <Suspense key={hydrated ? "load" : "loading"}>
+                <span>
+                  {t("Search.created_at")}
+                  {formatDate(
+                    data.created_at,
+                    t("COMMON.DATE_FORMAT"),
+                    !hydrated,
+                  )}
+                </span>
+              </Suspense>
               <span>
                 {t("Search.hash")}
                 <span className="border rounded-sm px-1 font-mono bg-gray-100 dark:bg-inherit dark:border-slate-800">
@@ -216,10 +225,16 @@ export const DetailContent = ({
                 {t("Search.file_count")}
                 {data.files.length}
               </span>
-              <span>
-                {t("Search.created_at")}
-                {formatDate(data.created_at, t("COMMON.DATE_FORMAT"))}
-              </span>
+              <Suspense key={hydrated ? "load" : "loading"}>
+                <span>
+                  {t("Search.created_at")}
+                  {formatDate(
+                    data.created_at,
+                    t("COMMON.DATE_FORMAT"),
+                    !hydrated,
+                  )}
+                </span>
+              </Suspense>
             </div>
           </CardFooter>
         </Card>

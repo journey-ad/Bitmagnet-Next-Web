@@ -124,7 +124,7 @@ export const SwitchLanguage = ({ noBg = false }: { noBg?: boolean }) => {
     setlang(key);
     Cookie.set("NEXT_LOCALE", Array.from(key)[0], {
       path: "/",
-      expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      expires: 365,
     });
 
     if (typeof window !== "undefined") {
