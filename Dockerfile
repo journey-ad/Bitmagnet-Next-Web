@@ -1,5 +1,5 @@
-# Use node:18-alpine as the base image
-FROM node:18-alpine AS base
+# Use node:20-alpine as the base image
+FROM node:20-alpine AS base
 
 # Set the working directory
 WORKDIR /app
@@ -7,7 +7,6 @@ WORKDIR /app
 # Install dependencies
 FROM base AS deps
 COPY package.json ./
-RUN npm config set registry 'https://registry.npmmirror.com/'
 RUN npm install
 
 # Build the application
@@ -17,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Prepare the runner stage
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # Set the working directory
 WORKDIR /app
@@ -33,7 +32,7 @@ COPY --from=builder /app/.next/server ./.next/server
 EXPOSE 3000
 
 # Set environment variables
-ENV HOSTNAME=0.0.0.0 PORT=3000
+ENV HOSTNAME=:: PORT=3000
 
 # Start the application
 CMD ["node", "server.js"]
