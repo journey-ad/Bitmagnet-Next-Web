@@ -18,7 +18,7 @@
 
 最方便的部署方式是用 Docker Compose，参考 [docker-compose.yml](./docker-compose.yml) 配置
 
-#### 使用 docker run 运行
+#### 手动运行 docker 容器
 
 如果不使用 Docker Compose，可以使用以下命令分别运行各个容器：
 
@@ -72,6 +72,79 @@ create extension pg_trgm; -- 启用 pg_trgm 扩展
 -- 对 `torrents.name` 和 `torrent_files.path` 建立索引
 CREATE INDEX idx_torrents_name_1 ON torrents USING gin (name gin_trgm_ops);
 CREATE INDEX idx_torrent_files_path_1 ON torrent_files USING gin (path gin_trgm_ops);
+```
+
+### (可选)使用 Meilisearch 增强搜索性能
+
+在 bitmagnet 运行数月后，数据库规模可能达到千万级别，普通的 gin 索引可能会力不从心，为了进一步提升查询性能，可以考虑使用 [Meilisearch](https://github.com/meilisearch/meilisearch) 作为全文搜索引擎，配置好后可实现千万数据任意搜索词数百毫秒内响应
+
+参考[Meilisearch 安装指引](https://www.meilisearch.com/docs/learn/getting_started/installation#local-installation)进行部署，同步数据可参考官网的[meilisync同步PostgreSQL教程](https://www.meilisearch.com/docs/guides/database/meilisync_postgresql)
+
+> [!NOTE]  
+> meilisync 需要 PostgreSQL 安装 `wal2json` 插件，并启用 `wal_level=logical` 日志级别后才可以使用同步功能，参考 [Dockerfile](https://gist.github.com/journey-ad/77096356f2d65ecd6259b8546f39a1d6)
+>
+> 如果 bitmagnet 已经运行了一段时间，建议先暂停爬虫任务进行一次全量同步，全量同步耗时比较久需要耐心等待。若未暂停爬虫任务，全量同步期间的事务将被记录在 wal 日志中，可能会产生大量磁盘空间占用
+
+为实现搜索筛选和排序功能，需要启用以下字段的 `filterableAttributes` 属性：
+- `created_at`
+- `size`
+
+和以下字段的 `sortableAttributes` 属性：
+- `created_at`
+- `files_count`
+- `size`
+
+最后在 Bitmagnet-Next-Web 部署时配置以下环境变量即可启用 Meilisearch 增强搜索：
+- `MEILISEARCH_API_URL`：Meilisearch 实例地址
+- `MEILISEARCH_API_KEY`：Meilisearch 实例的 API Key
+
+#### Meilisearch 配置参考
+```json
+{
+  ...
+  "filterableAttributes": [
+    "created_at",
+    "size"
+  ],
+  "sortableAttributes": [
+    "created_at",
+    "files_count",
+    "size"
+  ],
+  ...
+}
+```
+
+#### meilisync 配置参考
+```yaml
+debug: false
+meilisearch:
+  api_url: http://meilisearch:7700/ # Meilisearch 实例地址
+  api_key: 'master_key' # Meilisearch 实例的 master_key
+  insert_size: 1000
+  insert_interval: 10
+progress:
+  type: file
+  path: './progress.json' # 保存同步进度，需要提前在对应目录创建一个空JSON文件，否则 meilisync 会报错
+source:
+  type: postgres # 指定数据库类型
+  host: postgres # 数据库host
+  port: 5432 # 数据库端口
+  database: bitmagnet # 数据库名
+  user: postgres # 连接用户名
+  password: postgres # 连接密码
+sync:
+  - table: torrents # 同步 torrents 表到 Meilisearch
+    pk: info_hash # 设置主键为 info_hash
+    full: true # 启用全量同步
+    fields: # 需要同步的字段
+      info_hash:
+      name:
+      size:
+      files_count:
+      extension:
+      created_at:
+      updated_at:
 ```
 
 ## 开发指引

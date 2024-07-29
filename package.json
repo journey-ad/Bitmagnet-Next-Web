@@ -29,6 +29,7 @@
 		"graphql-tag": "^2.12.6",
 		"intl-messageformat": "^10.5.0",
 		"js-cookie": "^3.0.5",
+		"meilisearch": "^0.41.0",
 		"next": "14.2.3",
 		"next-intl": "^3.14.1",
 		"next-themes": "^0.2.1",

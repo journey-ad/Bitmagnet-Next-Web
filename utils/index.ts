@@ -1,3 +1,5 @@
+import type { ManipulateType } from "dayjs";
+
 import dayjs from "dayjs";
 import Cookie from "js-cookie";
 
@@ -45,6 +47,10 @@ export function formatDate(
   if (utc) dateStr += " (UTC)";
 
   return dateStr;
+}
+
+export function getTimestamp(diff = 0, unit = "second" as ManipulateType) {
+  return dayjs().add(diff, unit).unix();
 }
 
 export function getSizeColor(size: number | string) {

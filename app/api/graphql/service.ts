@@ -1,6 +1,8 @@
 import { query } from "@/lib/pgdb";
 import { jiebaCut } from "@/lib/jieba";
+import meiliClient from "@/lib/meilisearch";
 import { SEARCH_KEYWORD_SPLIT_REGEX } from "@/config/constant";
+import { getTimestamp } from "@/utils/index";
 
 type Torrent = {
   info_hash: Buffer; // The hash info of the torrent
@@ -73,7 +75,7 @@ export function formatTorrent(row: Torrent) {
 }
 
 // Utility functions for query building
-const buildOrderBy = (sortType: keyof typeof orderByMap) => {
+const buildOrderBy = (sortType: "size" | "count" | "date") => {
   const orderByMap = {
     size: "torrents.size DESC",
     count: "COALESCE(torrents.files_count, 0) DESC",
@@ -83,7 +85,9 @@ const buildOrderBy = (sortType: keyof typeof orderByMap) => {
   return orderByMap[sortType] || "torrents.created_at DESC";
 };
 
-const buildTimeFilter = (filterTime: keyof typeof timeFilterMap) => {
+const buildTimeFilter = (
+  filterTime: "gt-1day" | "gt-7day" | "gt-31day" | "gt-365day",
+) => {
   const timeFilterMap = {
     "gt-1day": "AND torrents.created_at > now() - interval '1 day'",
     "gt-7day": "AND torrents.created_at > now() - interval '1 week'",
@@ -94,7 +98,14 @@ const buildTimeFilter = (filterTime: keyof typeof timeFilterMap) => {
   return timeFilterMap[filterTime] || "";
 };
 
-const buildSizeFilter = (filterSize: keyof typeof sizeFilterMap) => {
+const buildSizeFilter = (
+  filterSize:
+    | "lt100mb"
+    | "gt100mb-lt500mb"
+    | "gt500mb-lt1gb"
+    | "gt1gb-lt5gb"
+    | "gt5gb",
+) => {
   const sizeFilterMap = {
     lt100mb: "AND torrents.size < 100 * 1024 * 1024::bigint",
     "gt100mb-lt500mb":
@@ -107,6 +118,74 @@ const buildSizeFilter = (filterSize: keyof typeof sizeFilterMap) => {
   };
 
   return sizeFilterMap[filterSize] || "";
+};
+
+// Build Meili Sort
+const buildMeiliSort = (sortType: "size" | "count" | "date") => {
+  const sortMap = {
+    size: "size:desc",
+    count: "files_count:desc",
+    date: "created_at:asc",
+  };
+
+  const sort = [sortMap[sortType] || "created_at:desc"];
+
+  console.log(sort);
+
+  return sort;
+};
+// Build Meili Filter
+const buildMeiliFilter = (queryInput: any) => {
+  const { sortType, filterTime, filterSize } = queryInput;
+
+  let filterList = [];
+
+  switch (filterTime) {
+    case "gt-1day":
+      filterList.push(`created_at > ${getTimestamp(-1, "day")}`);
+      break;
+    case "gt-7day":
+      filterList.push(`created_at > ${getTimestamp(-7, "day")}`);
+      break;
+    case "gt-31day":
+      filterList.push(`created_at > ${getTimestamp(-1, "month")}`);
+      break;
+    case "gt-365day":
+      filterList.push(`created_at > ${getTimestamp(-1, "year")}`);
+      break;
+  }
+
+  switch (filterSize) {
+    case "lt100mb":
+      filterList.push(`size < ${100 * 1024 * 1024}`);
+      break;
+    case "gt100mb-lt500mb":
+      filterList.push(
+        `size >= ${100 * 1024 * 1024} AND size < ${500 * 1024 * 1024}`,
+      );
+      break;
+    case "gt500mb-lt1gb":
+      filterList.push(
+        `size >= ${500 * 1024 * 1024} AND size < ${1 * 1024 * 1024 * 1024}`,
+      );
+      break;
+    case "gt1gb-lt5gb":
+      filterList.push(
+        `size >= ${1 * 1024 * 1024 * 1024} AND size < ${5 * 1024 * 1024 * 1024}`,
+      );
+      break;
+    case "gt5gb":
+      filterList.push(`size >= ${5 * 1024 * 1024 * 1024}`);
+      break;
+  }
+
+  if (!filterList.length) return [];
+
+  const filter = [filterList.join(" AND ")];
+
+  console.log(filter);
+
+  return filter;
 };
 
 const QUOTED_KEYWORD_REGEX = /"([^"]+)"/g;
@@ -159,78 +238,42 @@ const extractKeywords = (
   return keywords;
 };
 
-export async function search(_: any, { queryInput }: any) {
-  try {
-    console.info("-".repeat(50));
-    console.info("search params", queryInput);
+const dbsearch = async ({ queryInput }: any) => {
+  // Build SQL conditions and parameters
+  const orderBy = buildOrderBy(queryInput.sortType);
+  const timeFilter = buildTimeFilter(queryInput.filterTime);
+  const sizeFilter = buildSizeFilter(queryInput.filterSize);
 
-    // trim keyword
-    queryInput.keyword = queryInput.keyword.trim();
+  const keywords = extractKeywords(queryInput.keyword);
 
-    const no_result = {
-      keywords: [queryInput.keyword],
-      torrents: [],
-      total_count: 0,
-      has_more: false,
-    };
+  // Construct the keyword filter condition
+  const requiredKeywords: string[] = [];
+  const optionalKeywords: string[] = [];
 
-    // Return an empty result if no keywords are provided
-    if (queryInput.keyword.length < 2) {
-      return no_result;
+  keywords.forEach(({ required }, i) => {
+    const condition = `torrents.name ILIKE $${i + 1}`;
+
+    if (required) {
+      requiredKeywords.push(condition);
+    } else {
+      optionalKeywords.push(condition);
     }
+  });
 
-    const REGEX_HASH = /^[a-f0-9]{40}$/;
+  const fullConditions = [...requiredKeywords];
 
-    if (REGEX_HASH.test(queryInput.keyword)) {
-      const torrent = await torrentByHash(_, { hash: queryInput.keyword });
+  if (optionalKeywords.length > 0) {
+    optionalKeywords.push("TRUE");
+    fullConditions.push(`(${optionalKeywords.join(" OR ")})`);
+  }
 
-      if (torrent) {
-        return {
-          keywords: [queryInput.keyword],
-          torrents: [torrent],
-          total_count: 1,
-          has_more: false,
-        };
-      }
+  const keywordFilter = fullConditions.join(" AND ");
 
-      return no_result;
-    }
+  const keywordsParams = keywords.map(({ keyword }) => `%${keyword}%`);
+  const keywordsPlain = keywords.map(({ keyword }) => keyword);
 
-    // Build SQL conditions and parameters
-    const orderBy = buildOrderBy(queryInput.sortType);
-    const timeFilter = buildTimeFilter(queryInput.filterTime);
-    const sizeFilter = buildSizeFilter(queryInput.filterSize);
-
-    const keywords = extractKeywords(queryInput.keyword);
-
-    // Construct the keyword filter condition
-    const requiredKeywords: string[] = [];
-    const optionalKeywords: string[] = [];
-
-    keywords.forEach(({ required }, i) => {
-      const condition = `torrents.name ILIKE $${i + 1}`;
-
-      if (required) {
-        requiredKeywords.push(condition);
-      } else {
-        optionalKeywords.push(condition);
-      }
-    });
-
-    const fullConditions = [...requiredKeywords];
-
-    if (optionalKeywords.length > 0) {
-      optionalKeywords.push("TRUE");
-      fullConditions.push(`(${optionalKeywords.join(" OR ")})`);
-    }
-
-    const keywordFilter = fullConditions.join(" AND ");
-
-    const keywordsParams = keywords.map(({ keyword }) => `%${keyword}%`);
-    const keywordsPlain = keywords.map(({ keyword }) => keyword);
-
-    // SQL query to fetch filtered torrent data and files information
-    const sql = `
+  // SQL query to fetch filtered torrent data and files information
+  const sql = `
 -- 先查到符合过滤条件的数据
 WITH filtered AS (
   SELECT 
@@ -277,19 +320,19 @@ FROM
   filtered;   -- 从过滤后的数据中查询
 `;
 
-    const params = [...keywordsParams, queryInput.limit, queryInput.offset];
+  const params = [...keywordsParams, queryInput.limit, queryInput.offset];
 
-    console.debug("SQL:", sql, params);
-    console.debug(
-      "keywords:",
-      keywords.map((item, i) => ({ _: `$${i + 1}`, ...item })),
-    );
+  console.debug("SQL:", sql, params);
+  console.debug(
+    "keywords:",
+    keywords.map((item, i) => ({ _: `$${i + 1}`, ...item })),
+  );
 
-    const queryArr = [query(sql, params)];
+  const queryArr = [query(sql, params)];
 
-    // SQL query to get the total count if requested
-    if (queryInput.withTotalCount) {
-      const countSql = `
+  // SQL query to get the total count if requested
+  if (queryInput.withTotalCount) {
+    const countSql = `
 SELECT COUNT(*) AS total
 FROM (
   SELECT 1
@@ -300,25 +343,125 @@ FROM (
     ${sizeFilter}
 ) AS limited_total;
         `;
-      const countParams = [...keywordsParams];
+    const countParams = [...keywordsParams];
 
-      queryArr.push(query(countSql, countParams));
-    } else {
-      queryArr.push(Promise.resolve({ rows: [{ total: 0 }] }) as any);
+    queryArr.push(query(countSql, countParams));
+  } else {
+    queryArr.push(Promise.resolve({ rows: [{ total: 0 }] }) as any);
+  }
+
+  // Execute queries and process results
+  const [{ rows: torrentsResp }, { rows: countResp }] =
+    await Promise.all(queryArr);
+
+  const torrents = torrentsResp.map(formatTorrent);
+  const total_count = countResp[0].total;
+
+  const has_more =
+    queryInput.withTotalCount &&
+    queryInput.offset + queryInput.limit < total_count;
+
+  return { keywords: keywordsPlain, torrents, total_count, has_more };
+};
+
+// invisible characters for highlighting
+const _MARK_TAG = ["\u200b\u200c", "\u200b\u200d"];
+// regex to extract keywords from name
+const _MARK_TAG_RE = new RegExp(`${_MARK_TAG[0]}(.*?)${_MARK_TAG[1]}`, "g");
+const meilisearch = async ({ queryInput }: any) => {
+  const { keyword, limit, offset, sortType } = queryInput;
+
+  const search = await meiliClient.torrents.search(keyword, {
+    offset,
+    limit,
+    sort: buildMeiliSort(sortType),
+    filter: buildMeiliFilter(queryInput),
+    attributesToSearchOn: ["name"],
+    attributesToRetrieve: ["info_hash", "name"],
+    attributesToHighlight: ["name"],
+    highlightPreTag: _MARK_TAG[0],
+    highlightPostTag: _MARK_TAG[1],
+  });
+
+  const { hits, estimatedTotalHits: total_count } = search;
+
+  const hashes = hits.map((item: any) => item.info_hash as string);
+  const torrents = await torrentByHashBatch(null, { hashes });
+
+  const has_more =
+    queryInput.withTotalCount &&
+    queryInput.offset + queryInput.limit < total_count;
+
+  const keywordsSet = hits.reduce(
+    (acc: Set<string>, item) => {
+      const { name } = item._formatted || {};
+
+      // extract keywords from name
+      if (name) {
+        [...name.matchAll(_MARK_TAG_RE)].forEach((match) => {
+          const [_, keyword] = match;
+
+          if (keyword.length > 1 || !/[a-zA-Z0-9]/.test(keyword)) {
+            acc.add(keyword);
+          }
+        });
+      }
+
+      return acc;
+    },
+    new Set<string>([keyword]),
+  );
+
+  return { keywords: [...keywordsSet], torrents, total_count, has_more };
+};
+
+const searchResolver = async ({ queryInput }: any) => {
+  // meilisearch resolver
+  if (meiliClient.enabled) {
+    return meilisearch({ queryInput });
+  } else {
+    return dbsearch({ queryInput });
+  }
+};
+
+export async function search(_: any, { queryInput }: any) {
+  try {
+    console.info("-".repeat(50));
+    console.info("search params", queryInput);
+
+    // trim keyword
+    queryInput.keyword = queryInput.keyword.trim();
+
+    const no_result = {
+      keywords: [queryInput.keyword],
+      torrents: [],
+      total_count: 0,
+      has_more: false,
+    };
+
+    // Return an empty result if no keywords are provided
+    if (queryInput.keyword.length < 2) {
+      return no_result;
     }
 
-    // Execute queries and process results
-    const [{ rows: torrentsResp }, { rows: countResp }] =
-      await Promise.all(queryArr);
+    const REGEX_HASH = /^[a-f0-9]{40}$/;
 
-    const torrents = torrentsResp.map(formatTorrent);
-    const total_count = countResp[0].total;
+    if (REGEX_HASH.test(queryInput.keyword)) {
+      const torrent = await torrentByHash(_, { hash: queryInput.keyword });
 
-    const has_more =
-      queryInput.withTotalCount &&
-      queryInput.offset + queryInput.limit < total_count;
+      if (torrent) {
+        return {
+          keywords: [queryInput.keyword],
+          torrents: [torrent],
+          total_count: 1,
+          has_more: false,
+        };
+      }
 
-    return { keywords: keywordsPlain, torrents, total_count, has_more };
+      return no_result;
+    }
+
+    return searchResolver({ queryInput });
   } catch (error) {
     console.error("Error in search resolver:", error);
     throw new Error("Failed to execute search query");
@@ -360,6 +503,51 @@ GROUP BY t.info_hash, t.name, t.size, t.created_at, t.updated_at, t.files_count;
     return formatTorrent(torrent);
   } catch (error) {
     console.error("Error in torrentByHash resolver:", error);
+    throw new Error("Failed to fetch torrent by hash");
+  }
+}
+
+export async function torrentByHashBatch(
+  _: any,
+  { hashes }: { hashes: string[] },
+) {
+  try {
+    const byteaHashes = hashes.map((hash) => Buffer.from(hash, "hex"));
+
+    // SQL query to fetch torrent data and files information by hash
+    const sql = `
+SELECT
+  t.info_hash,
+  t.name,
+  t.size,
+  t.created_at,
+  t.updated_at,
+  t.files_count,
+  (
+    SELECT json_agg(json_build_object(
+      'index', f.index,
+      'path', f.path,
+      'size', f.size,
+      'extension', f.extension
+    ))
+    FROM torrent_files f
+    WHERE f.info_hash = t.info_hash
+  ) AS files
+FROM torrents t
+WHERE t.info_hash = ANY($1)
+GROUP BY t.info_hash;
+    `;
+
+    const params = [byteaHashes];
+
+    const { rows } = await query(sql, params);
+    const torrents = rows.map(formatTorrent).sort((a, b) => {
+      return hashes.indexOf(a.hash) > hashes.indexOf(b.hash) ? 1 : -1;
+    });
+
+    return torrents;
+  } catch (error) {
+    console.error("Error in torrentByHashBatch resolver:", error);
     throw new Error("Failed to fetch torrent by hash");
   }
 }

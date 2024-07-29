@@ -18,7 +18,7 @@ A more modern magnet search website program, developed using [Next.js 14](https:
 
 The most convenient way to deploy is using Docker Compose. Refer to the [docker-compose.yml](./docker-compose.yml)
 
-### Running with docker run
+#### Run Docker Container Manually
 
 If not using Docker Compose, you can run each container separately using the following commands:
 
@@ -72,6 +72,79 @@ create extension pg_trgm; -- Enable pg_trgm extension
 -- Create indexes on `torrents.name` and `torrent_files.path`
 CREATE INDEX idx_torrents_name_1 ON torrents USING gin (name gin_trgm_ops);
 CREATE INDEX idx_torrent_files_path_1 ON torrent_files USING gin (path gin_trgm_ops);
+```
+
+### (Optional) Enhanced Search with Meilisearch
+
+After running bitmagnet for several months, the database size may reach tens of millions of records, making standard gin indexing less effective. To improve query performance, consider using [Meilisearch](https://github.com/meilisearch/meilisearch) as a full-text search engine. Properly configured, it can respond to queries across tens of millions of records within a few hundred milliseconds.
+
+Refer to the Meilisearch [installation guide](https://www.meilisearch.com/docs/learn/getting_started/installation#local-installation) for deployment. For data synchronization, see the official meilisync PostgreSQL [guide](https://www.meilisearch.com/docs/guides/database/meilisync_postgresql).
+
+> [!NOTE]  
+> meilisync requires the `wal2json` plugin for PostgreSQL and `wal_level=logical` logging. See the [Dockerfile](https://gist.github.com/journey-ad/77096356f2d65ecd6259b8546f39a1d6) for reference.
+>
+> If bitmagnet has been running for a while, it is recommended to pause crawler tasks and perform a full data sync, which may take some time. Without pausing, transactions during the full sync will be recorded in the wal logs, possibly consuming significant disk space.
+
+To enable search filtering and sorting, set `filterableAttributes` for:
+- `created_at`
+- `size`
+
+And `sortableAttributes` for:
+- `created_at`
+- `files_count`
+- `size`
+
+Finally, configure the following environment variables in Bitmagnet-Next-Web to enable Meilisearch enhanced search:
+- `MEILISEARCH_API_URL`: Meilisearch instance URL
+- `MEILISEARCH_API_KEY`: Meilisearch instance API Key
+
+#### Meilisearch Configuration Reference
+```json
+{
+  ...
+  "filterableAttributes": [
+    "created_at",
+    "size"
+  ],
+  "sortableAttributes": [
+    "created_at",
+    "files_count",
+    "size"
+  ],
+  ...
+}
+```
+
+#### meilisync Configuration Reference
+```yaml
+debug: false
+meilisearch:
+  api_url: http://meilisearch:7700/ # Meilisearch instance URL
+  api_key: 'master_key' # Meilisearch instance master_key
+  insert_size: 1000
+  insert_interval: 10
+progress:
+  type: file
+  path: './progress.json' # Save sync progress, create an empty JSON file in the specified directory beforehand, or meilisync will error
+source:
+  type: postgres # Specify database type
+  host: postgres # Database host
+  port: 5432 # Database port
+  database: bitmagnet # Database name
+  user: postgres # Connection username
+  password: postgres # Connection password
+sync:
+  - table: torrents # Sync torrents table to Meilisearch
+    pk: info_hash # Set primary key to info_hash
+    full: true # Enable full sync
+    fields: # Fields to sync
+      info_hash:
+      name:
+      size:
+      files_count:
+      extension:
+      created_at:
+      updated_at:
 ```
 
 ## Development Guide
