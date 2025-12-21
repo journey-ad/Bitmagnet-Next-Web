@@ -1,5 +1,5 @@
 # Use node:20-alpine as the base image
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
 # Set the working directory
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Prepare the runner stage
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 # Set the working directory
 WORKDIR /app
