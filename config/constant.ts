@@ -13,8 +13,9 @@ export const SEARCH_PARAMS = {
 } as const;
 
 // Tokenizer for search keywords
-// 使用 "+" 作为关键词连接符，例如：A+B 表示必须同时包含 A 和 B
-export const SEARCH_KEYWORD_SPLIT_REGEX = /\+/g;
+// 使用空格作为关键词连接符，例如：A B 表示必须同时包含 A 和 B
+// 使用 \s+ 可以自动合并连续空白（空格、制表符等）
+export const SEARCH_KEYWORD_SPLIT_REGEX = /\s+/g;
 
 // Using for Search page
 export const SEARCH_DISPLAY_FILES_MAX = 10;

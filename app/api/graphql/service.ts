@@ -112,17 +112,15 @@ const buildSizeFilter = (filterSize: keyof typeof sizeFilterMap) => {
 const extractKeywords = (
   keyword: string,
 ): { keyword: string; required: boolean }[] => {
-  // A+B 语义：
-  // - 使用 "+" 分隔多个必选关键词，例如 "A+B" 表示同时包含 A 和 B
-  // - 不含 "+" 时，整串作为一个必选关键词（精确匹配这一个词，不再继续拆分）
+  // 空格分词语义：
+  // - 使用空格分隔多个必选关键词，例如 "A B" 表示同时包含 A 和 B
+  // - 多个连续空白会被合并处理
   const trimmed = keyword.trim();
 
   if (!trimmed) return [];
 
-  const parts =
-    trimmed.indexOf("+") === -1
-      ? [trimmed]
-      : trimmed.split(SEARCH_KEYWORD_SPLIT_REGEX);
+  // 使用 SEARCH_KEYWORD_SPLIT_REGEX（\s+）按空白切分
+  const parts = trimmed.split(SEARCH_KEYWORD_SPLIT_REGEX);
 
   const unique = Array.from(
     new Set(
