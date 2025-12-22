@@ -109,54 +109,31 @@ const buildSizeFilter = (filterSize: keyof typeof sizeFilterMap) => {
   return sizeFilterMap[filterSize] || "";
 };
 
-const QUOTED_KEYWORD_REGEX = /"([^"]+)"/g;
 const extractKeywords = (
   keyword: string,
 ): { keyword: string; required: boolean }[] => {
-  let keywords = [];
-  let match;
+  // A+B 语义：
+  // - 使用 "+" 分隔多个必选关键词，例如 "A+B" 表示同时包含 A 和 B
+  // - 不含 "+" 时，整串作为一个必选关键词（精确匹配这一个词，不再继续拆分）
+  const trimmed = keyword.trim();
 
-  // Extract exact keywords using quotation marks
-  while ((match = QUOTED_KEYWORD_REGEX.exec(keyword)) !== null) {
-    keywords.push({ keyword: match[1], required: true });
-  }
+  if (!trimmed) return [];
 
-  const remainingKeywords = keyword.replace(QUOTED_KEYWORD_REGEX, "");
+  const parts =
+    trimmed.indexOf("+") === -1
+      ? [trimmed]
+      : trimmed.split(SEARCH_KEYWORD_SPLIT_REGEX);
 
-  // Extract remaining keywords using regex tokenizer
-  keywords.push(
-    ...remainingKeywords
-      .trim()
-      .split(SEARCH_KEYWORD_SPLIT_REGEX)
-      .map((k) => ({ keyword: k, required: false })),
+  const unique = Array.from(
+    new Set(
+      parts
+        .map((k) => k.trim())
+        // 保留长度 >= 2 的关键词，避免过短的 SQL 条件
+        .filter((k) => k.length >= 2),
+    ),
   );
 
-  // Use jieba to words segment if input is a full sentence
-  if (keywords.length === 1 && keyword.length >= 4) {
-    keywords.push(...jiebaCut(keyword));
-  }
-
-  // Remove duplicates and filter out keywords shorter than 2 characters to avoid slow SQL queries
-  keywords = Array.from(
-    new Map(keywords.map((k) => [k.keyword, k])).values(),
-  ).filter(({ keyword }) => keyword.trim().length >= 2);
-
-  // Ensure at least 1/3 keyword is required when there is no required keyword
-  if (keywords.length && !keywords.some(({ required }) => required)) {
-    [...keywords]
-      .sort((a, b) => b.keyword.length - a.keyword.length)
-      .slice(0, Math.ceil(keywords.length / 3))
-      .forEach((k) => (k.required = true));
-  }
-
-  const fullKeyword = keyword.replace(/"/g, "");
-
-  // Ensure full keyword is the first item
-  if (!keywords.some((k) => k.keyword === fullKeyword)) {
-    keywords.unshift({ keyword: fullKeyword, required: false });
-  }
-
-  return keywords;
+  return unique.map((k) => ({ keyword: k, required: true }));
 };
 
 export async function search(_: any, { queryInput }: any) {
