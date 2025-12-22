@@ -79,27 +79,15 @@ export function parseHighlight(text: string, highlight: string | string[]) {
         )
       : highlight;
 
-  // Function to escape HTML special characters to avoid interference
-  function escapeHtml(unsafe: string) {
-    return unsafe.replace(/[&<>"'`=\/]/g, (match) => {
-      return (
-        {
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-          "`": "&#96;",
-          "/": "&#x2F;",
-          "=": "&#x3D;",
-        }[match] || match
-      );
-    });
+  // Escape keyword for use in RegExp pattern
+  function escapeRegExp(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   // Function to highlight the keywords
   function highlightKeywords(text: string, keyword: string) {
-    const regex = new RegExp(`(${escapeHtml(keyword)})(?![^<>]*>)`, "gi");
+    const safeKeyword = escapeRegExp(keyword);
+    const regex = new RegExp(`(${safeKeyword})(?![^<>]*>)`, "gi");
 
     return text.replace(
       regex,
